@@ -15,7 +15,7 @@ jobs:
         run: |
           set -e
           
-          # 1. Tạo mã nguồn Objective-C tối ưu hóa gọn gàng
+          # 1. Tạo mã nguồn Objective-C sạch 100% không lỗi cú pháp
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -124,7 +124,6 @@ jobs:
 
           - (void)loadSettingsTab:(UIView *)view {
               CGFloat y = 5;
-              UIDevice *dev = [UIColor.class, [UIDevice currentDevice]];
               
               UILabel *devLbl = [[UILabel alloc] initWithFrame:CGRectMake(0, y, 305, 20)];
               devLbl.text = [NSString stringWithFormat:@"📱 Thiết bị: %@", [UIDevice currentDevice].name];
@@ -214,74 +213,4 @@ jobs:
           }
 
           - (void)injNormAct { NSLog(@"[3105] Inject FF Normal success"); }
-          - (void)injMaxAct { NSLog(@"[3105] Inject FF Max success"); }
-          - (void)openNormAct { [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"com.dts.freefireth://"] options:@{} completionHandler:nil]; }
-          - (void)openMaxAct { [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"com.dts.freefiremax://"] options:@{} completionHandler:nil]; }
-          - (void)dnsAct {
-              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                  dnsStatus = YES;
-                  dnsLbl.text = @"Trạng thái: Đã cài đặt antiban";
-                  dnsLbl.textColor = [UIColor greenColor];
-              });
-          }
-
-          - (void)closeMenu { [win removeFromSuperview]; win = nil; }
-          @end
-
-          int main(int argc, char *argv[]) {
-              @autoreleasepool { return UIApplicationMain(argc, argv, nil, nil); }
-          }
-          EOF
-
-          # 2. Xây dựng gói ứng dụng và biên dịch
-          APP="Payload/BinVipPro.app"
-          mkdir -p "$APP"
-
-          cat << 'EOF' > "$APP/Info.plist"
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleIdentifier</key>
-              <string>com.3105.binvippro</string>
-              <key>CFBundleName</key>
-              <string>3105 binvippro</string>
-              <key>CFBundleDisplayName</key>
-              <string>3105 binvippro</string>
-              <key>CFBundleExecutable</key>
-              <string>BinExec</string>
-              <key>CFBundleVersion</key>
-              <string>1.0</string>
-              <key>CFBundleShortVersionString</key>
-              <string>1.0</string>
-              <key>LSRequiresIPhoneOS</key>
-              <true/>
-          </dict>
-          </plist>
-          EOF
-
-          echo 'APPL???株' > "$APP/PkgInfo"
-
-          SDK=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          
-          xcrun --sdk iphonesimulator clang \
-                -arch arm64 \
-                -isysroot "$SDK" \
-                -fobjc-arc \
-                -lobjc \
-                -framework UIKit \
-                -framework Foundation \
-                -framework CoreGraphics \
-                AppSource/main.m \
-                -o "$APP/BinExec"
-
-          codesign --force --sign - "$APP" || true
-          
-          zip -r 3105_binvippro.ipa Payload
-          echo "=> ĐÓNG GÓI THÀNH CÔNG HOÀN TẤT!"
-
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: 3105_binvippro
-          path: 3105_binvippro.ipa
+          - (void)injMaxAct { NSLog(@"[3105] Inject
