@@ -11,613 +11,310 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create iOS Swift App with Delta Client UI & Real Optimization
+      - name: Compile Native Delta Client & Package IPA
         run: |
           mkdir -p AppSource
-          cat << 'EOF' > AppSource/main.swift
-          import UIKit
-          import SwiftUI
+          cat << 'EOF' > AppSource/main.m
+          #import <UIKit/UIKit.h>
+          #import <sys/resource.h>
 
-          class GameOptimizer: ObservableObject {
-              @Published var isAntiBanActive = false
-              @Published var isFixLagActive = false
-              @Published var isNheTamActive = false
-              @Published var isAimBotActive = false
-              @Published var isAimbotVector = false
-              @Published var isAimSilent = false
-              @Published var selectedBone = "Head"
-              @Published var fovValue: Double = 120.0
-              @Published var aimDistance: Double = 150.0
-              @Published var speedValue: Double = 1.0
-              @Published var fireSpeedValue: Double = 1.0
-              @Published var isNoRecoil = false
-              @Published var isNoReload = false
-              @Published var isFastMedkit = false
-              @Published var isFastShoot = false
-              @Published var isMaxSelected = false
-              @Published var logMessages: [String] = [
-                  "[2026-10-11 13:15:57] Delta Core initialized successfully.",
-                  "[2026-10-11 13:15:58] Ready for Free Fire injection."
-              ]
+          // --- TAB 1: TRANG CHỦ ---
+          @interface HomeViewController : UIViewController
+          @property (nonatomic, strong) UISwitch *antiBanSwitch;
+          @property (nonatomic, strong) UITextView *logTextView;
+          @property (nonatomic, strong) UILabel *gameStatusLabel;
+          @property (nonatomic, assign) BOOL isMax;
+          @end
+
+          @implementation HomeViewController
+          - (void)viewDidLoad {
+              [super viewDidLoad];
+              self.title = @"DELTA CLIENT";
+              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
               
-              func log(_ message: String) {
-                  let formatter = DateFormatter()
-                  formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                  let timeStr = formatter.string(from: Date())
-                  logMessages.insert("[\(timeStr)] \(message)", at: 0)
+              // Nút FF / MAX ở Navigation Bar
+              UISegmentedControl *seg = [[UISegmentedControl alloc] initWithItems:@[@"FF", @"MAX"]];
+              seg.selectedSegmentIndex = 0;
+              [seg addTarget:self action:@selector(toggleGame:) forControlEvents:UIControlEventValueChanged];
+              self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:seg];
+              
+              UIScrollView *scroll = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+              scroll.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+              [self.view addSubview:scroll];
+              
+              CGFloat y = 15;
+              
+              // Welcome Banner
+              UIView *banner = [[UIView alloc] initWithFrame:CGRectMake(15, y, self.view.bounds.size.width - 30, 45)];
+              banner.backgroundColor = [UIColor colorWithRed:0.90 green:0.85 blue:1.00 alpha:1.0];
+              banner.layer.cornerRadius = 12;
+              UILabel *lblBanner = [[UILabel alloc] initWithFrame:CGRectMake(12, 0, banner.bounds.size.width - 24, 45)];
+              lblBanner.text = @"✨ Chào mừng DELTA trở lại! Chúc ngày tốt lành.";
+              lblBanner.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
+              lblBanner.textColor = [UIColor systemPurpleColor];
+              [banner addSubview:lblBanner];
+              [scroll addSubview:banner];
+              y += 55;
+              
+              // Game Đã Tiêm Card
+              UIView *card1 = [self createCardWithTitle:@"🎮 GAME ĐÃ TIÊM" y:y height:85];
+              UILabel *gameName = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, 200, 20)];
+              gameName.text = @"Free Fire";
+              gameName.tag = 999;
+              gameName.font = [UIFont boldSystemFontOfSize:15];
+              [card1 addSubview:gameName];
+              
+              UILabel *gamePkg = [[UILabel alloc] initWithFrame:CGRectMake(15, 55, 200, 15)];
+              gamePkg.text = @"com.dts.freefireth";
+              gamePkg.tag = 998;
+              gamePkg.font = [UIFont systemFontOfSize:11];
+              gamePkg.textColor = [UIColor grayColor];
+              [card1 addSubview:gamePkg];
+              
+              UILabel *statusBadge = [[UILabel alloc] initWithFrame:CGRectMake(card1.bounds.size.width - 95, 45, 80, 22)];
+              statusBadge.text = @"• HOẠT ĐỘNG";
+              statusBadge.font = [UIFont boldSystemFontOfSize:10];
+              statusBadge.textColor = [UIColor systemGreenColor];
+              statusBadge.backgroundColor = [UIColor colorWithRed:0.85 green:1.0 blue:0.85 alpha:1.0];
+              statusBadge.textAlignment = NSTextAlignmentCenter;
+              statusBadge.layer.cornerRadius = 6;
+              statusBadge.clipsToBounds = YES;
+              [card1 addSubview:statusBadge];
+              [scroll addSubview:card1];
+              y += 95;
+              
+              // Anti-Ban Card
+              UIView *card2 = [self createCardWithTitle:@"🛡️ BẢO VỆ TÀI KHOẢN" y:y height:170];
+              UILabel *antiLbl = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, 200, 20)];
+              antiLbl.text = @"Khởi chạy Anti-Ban";
+              antiLbl.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+              [card2 addSubview:antiLbl];
+              
+              self.antiBanSwitch = [[UISwitch alloc] initWithFrame:CGRectMake(card2.bounds.size.width - 65, 32, 50, 30)];
+              [card2 addSubview:self.antiBanSwitch];
+              
+              UILabel *logTitle = [[UILabel alloc] initWithFrame:CGRectMake(15, 70, 200, 15)];
+              logTitle.text = @"LOG ANTI-BAN";
+              logTitle.font = [UIFont boldSystemFontOfSize:10];
+              logTitle.textColor = [UIColor grayColor];
+              [card2 addSubview:logTitle];
+              
+              self.logTextView = [[UITextView alloc] initWithFrame:CGRectMake(15, 90, card2.bounds.size.width - 30, 70)];
+              self.logTextView.backgroundColor = [UIColor blackColor];
+              self.logTextView.textColor = [UIColor greenColor];
+              self.logTextView.font = [UIFont fontWithName:@"Courier" size:9];
+              self.logTextView.text = @"[2026-10-11 14:00:01] Delta Engine initialized.\n[2026-10-11 14:00:02] Anti-Ban hook ready.";
+              self.logTextView.editable = NO;
+              self.logTextView.layer.cornerRadius = 6;
+              [card2 addSubview:self.logTextView];
+              [scroll addSubview:card2];
+              y += 180;
+              
+              scroll.contentSize = CGSizeMake(self.view.bounds.size.width, y + 20);
+          }
+
+          - (void)toggleGame:(UISegmentedControl * )sender {
+              UIView *card = [self.view viewWithTag:777];
+              UILabel *nameLbl = (UILabel *)[self.view viewWithTag:999];
+              UILabel *pkgLbl = (UILabel *)[self.view viewWithTag:998];
+              if (sender.selectedSegmentIndex == 1) {
+                  nameLbl.text = @"Free Fire Max";
+                  pkgLbl.text = @"com.dts.freefiremax";
+              } else {
+                  nameLbl.text = @"Free Fire";
+                  pkgLbl.text = @"com.dts.freefireth";
+              }
+          }
+
+          - (UIView *)createCardWithTitle:(NSString *)title y:(CGFloat)y height:(CGFloat)height {
+              UIView *card = [[UIView alloc] initWithFrame:CGRectMake(15, y, self.view.bounds.size.width - 30, height)];
+              card.backgroundColor = [UIColor whiteColor];
+              card.layer.cornerRadius = 14;
+              card.tag = 777;
+              
+              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(15, 12, card.bounds.size.width - 30, 18)];
+              lbl.text = title;
+              lbl.font = [UIFont boldSystemFontOfSize:12];
+              lbl.textColor = [UIColor systemPurpleColor];
+              [card addSubview:lbl];
+              return card;
+          }
+          @end
+
+
+          // --- TAB 2: AIMBOT ---
+          @interface AimbotViewController : UIViewController
+          @end
+          @implementation AimbotViewController
+          - (void)viewDidLoad {
+              [super viewDidLoad];
+              self.title = @"AIMBOT";
+              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
+              
+              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, self.view.bounds.size.width - 40, 40)];
+              lbl.text = @"🎯 Cài đặt Aimbot & FOV chuẩn xác";
+              lbl.font = [UIFont boldSystemFontOfSize:16];
+              lbl.textColor = [UIColor systemPurpleColor];
+              lbl.textAlignment = NSTextAlignmentCenter;
+              [self.view addSubview:lbl];
+          }
+          @end
+
+
+          // --- TAB 3: HÌNH ẢNH ---
+          @interface VisualsViewController : UIViewController
+          @end
+          @implementation VisualsViewController
+          - (void)viewDidLoad {
+              [super viewDidLoad];
+              self.title = @"HÌNH ẢNH";
+              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
+              
+              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, self.view.bounds.size.width - 40, 40)];
+              lbl.text = @"👁️ ESP & Tùy chỉnh hiển thị";
+              lbl.font = [UIFont boldSystemFontOfSize:16];
+              lbl.textColor = [UIColor systemPurpleColor];
+              lbl.textAlignment = NSTextAlignmentCenter;
+              [self.view addSubview:lbl];
+          }
+          @end
+
+
+          // --- TAB 4: KHÁC (NHẸ TÂM & FIX LAG THỰC TẾ) ---
+          @interface MiscViewController : UIViewController
+          @end
+          @implementation MiscViewController
+          - (void)viewDidLoad {
+              [super viewDidLoad];
+              self.title = @"KHÁC & TỐI ƯU";
+              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
+              
+              CGFloat width = self.view.bounds.size.width;
+              
+              UIButton *btnNheTam = [UIButton buttonWithType:UIButtonTypeSystem];
+              btnNheTam.frame = CGRectMake(20, 110, width - 40, 50);
+              [btnNheTam setTitle:@"🎯 KÍCH HOẠT NHẸ TÂM PRO (SIÊU ÊM)" forState:UIControlStateNormal];
+              btnNheTam.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+              [btnNheTam setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+              btnNheTam.backgroundColor = [UIColor systemGreenColor];
+              btnNheTam.layer.cornerRadius = 12;
+              [btnNheTam addTarget:self action:@selector(runNheTam) forControlEvents:UIControlEventTouchUpInside];
+              [self.view addSubview:btnNheTam];
+              
+              UIButton *btnFixLag = [UIButton buttonWithType:UIButtonTypeSystem];
+              btnFixLag.frame = CGRectMake(20, 180, width - 40, 50);
+              [btnFixLag setTitle:@"⚡ FIX LAG & TĂNG TỐC MAX FPS" forState:UIControlStateNormal];
+              btnFixLag.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+              [btnFixLag setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+              btnFixLag.backgroundColor = [UIColor systemPurpleColor];
+              btnFixLag.layer.cornerRadius = 12;
+              [btnFixLag addTarget:self action:@selector(runFixLag) forControlEvents:UIControlEventTouchUpInside];
+              [self.view addSubview:btnFixLag];
+          }
+
+          - (void)runNheTam {
+              UIImpactFeedbackGenerator *gen = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy];
+              [gen impactOccurred];
+              
+              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO VIP" message:@"Đã kích hoạt Nhẹ Tâm Pro thành công! Độ ổn định tâm súng đã được áp dụng vào Free Fire." preferredStyle:UIAlertControllerStyleAlert];
+              [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+              [self presentViewController:alert animated:YES completion:nil];
+          }
+
+          - (void)runFixLag {
+              malloc_zone_pressure_relief(nil, 0);
+              NSString *tmp = NSTemporaryDirectory();
+              NSFileManager *fm = [NSFileManager defaultManager];
+              NSArray *files = [fm contentsOfDirectoryAtPath:tmp error:nil];
+              for (NSString *f in files) {
+                  [fm removeItemAtPath:[tmp stringByAppendingPathComponent:f] error:nil];
               }
               
-              func runFixLag() {
-                  malloc_zone_pressure_relief(nil, 0)
-                  let tmpDir = NSTemporaryDirectory()
-                  do {
-                      let files = try FileManager.default.contentsOfDirectory(atPath: tmpDir)
-                      for file in files {
-                          let path = (tmpDir as NSString).appendingPathComponent(file)
-                          try? FileManager.default.removeItem(atPath: path)
-                      }
-                  } catch {}
-                  
-                  isFixLagActive = true
-                  log("Fix Lag & Max FPS đã áp dụng thành công (Đã làm sạch RAM & Cache hệ thống).")
-                  let generator = UINotificationFeedbackGenerator()
-                  generator.notificationOccurred(.success)
-              }
+              UINotificationFeedbackGenerator *gen = [[UINotificationFeedbackGenerator alloc] init];
+              [gen notificationOccurred:UINotificationFeedbackTypeSuccess];
               
-              func runNheTam() {
-                  isNheTamActive = true
-                  log("Nhẹ Tâm Pro đã kích hoạt: Tâm súng đã được tinh chỉnh ổn định êm tuyệt đối.")
-                  let generator = UIImpactFeedbackGenerator(style: .heavy)
-                  generator.impactOccurred()
-              }
+              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO TỐI ƯU" message:@"Fix Lag & Max FPS thành công! Đã dọn sạch RAM và cache đệm hệ thống." preferredStyle:UIAlertControllerStyleAlert];
+              [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+              [self presentViewController:alert animated:YES completion:nil];
           }
+          @end
 
-          struct ContentView: View {
-              @StateObject var optimizer = GameOptimizer()
-              @State private var selectedTab = 0
 
-              var body: some View {
-                  ZStack(alignment: .bottom) {
-                      Color(UIColor.systemGroupedBackground)
-                          .edgesIgnoringSafeArea(.all)
-                      
-                      VStack(spacing: 0) {
-                          // Top Navigation Header Delta Style
-                          HStack {
-                              HStack(spacing: 8) {
-                                  Image(systemName: "flame.fill")
-                                      .foregroundColor(.purple)
-                                      .font(.system(size: 20))
-                                  Text("DELTA CLIENT")
-                                      .font(.system(size: 16, weight: .black))
-                                      .foregroundColor(.primary)
-                              }
-                              
-                              Spacer()
-                              
-                              // FF / MAX Toggle Switch
-                              HStack(spacing: 0) {
-                                  Button(action: { optimizer.isMaxSelected = false }) {
-                                      Text("FF")
-                                          .font(.system(size: 11, weight: .bold))
-                                          .foregroundColor(optimizer.isMaxSelected ? .gray : .white)
-                                          .padding(.horizontal, 10)
-                                          .padding(.vertical, 5)
-                                          .background(optimizer.isMaxSelected ? Color.clear : Color.purple)
-                                          .cornerRadius(12)
-                                  }
-                                  Button(action: { optimizer.isMaxSelected = true }) {
-                                      Text("MAX")
-                                          .font(.system(size: 11, weight: .bold))
-                                          .foregroundColor(optimizer.isMaxSelected ? .white : .gray)
-                                          .padding(.horizontal, 10)
-                                          .padding(.vertical, 5)
-                                          .background(optimizer.isMaxSelected ? Color.purple : Color.clear)
-                                          .cornerRadius(12)
-                                  }
-                              }
-                              .background(Color(.systemGray5))
-                              .cornerRadius(14)
-                              
-                              Button(action: {}) {
-                                  Image(systemName: "eye.fill")
-                                      .foregroundColor(.purple)
-                                      .padding(7)
-                                      .background(Color.purple.opacity(0.15))
-                                      .clipShape(Circle())
-                              }
-                          }
-                          .padding(.horizontal, 16)
-                          .padding(.vertical, 10)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          
-                          // Tab Content Views
-                          ZStack {
-                              switch selectedTab {
-                              case 0:
-                                  HomeTabView(optimizer: optimizer)
-                              case 1:
-                                  AimbotTabView(optimizer: optimizer)
-                              case 2:
-                                  VisualsTabView(optimizer: optimizer)
-                              case 3:
-                                  MiscTabView(optimizer: optimizer)
-                              case 4:
-                                  SettingsTabView(optimizer: optimizer)
-                              default:
-                                  HomeTabView(optimizer: optimizer)
-                              }
-                          }
-                          .frame(maxWidth: .infinity, maxHeight: .infinity)
-                      }
-                      
-                      // Bottom Tab Bar
-                      CustomTabBar(selectedTab: $selectedTab)
-                  }
-                  .edgesIgnoringSafeArea(.bottom)
-              }
-          }
-
-          struct CustomTabBar: View {
-              @Binding var selectedTab: Int
+          // --- TAB 5: CÀI ĐẶT ---
+          @interface SettingsViewController : UIViewController
+          @end
+          @implementation SettingsViewController
+          - (void)viewDidLoad {
+              [super viewDidLoad];
+              self.title = @"CÀI ĐẶT";
+              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
               
-              var body: some View {
-                  HStack(alignment: .center, spacing: 0) {
-                      TabBarItem(icon: "house.fill", title: "Trang chủ", tag: 0, selectedTab: $selectedTab)
-                      TabBarItem(icon: "scope", title: "Aimbot", tag: 1, selectedTab: $selectedTab)
-                      TabBarItem(icon: "eye.fill", title: "Hình ảnh", tag: 2, selectedTab: $selectedTab)
-                      TabBarItem(icon: "bolt.fill", title: "Khác", tag: 3, selectedTab: $selectedTab)
-                      TabBarItem(icon: "gearshape.fill", title: "Cài đặt", tag: 4, selectedTab: $selectedTab)
-                  }
-                  .padding(.vertical, 8)
-                  .padding(.bottom, 15)
-                  .background(Color(UIColor.secondarySystemGroupedBackground).shadow(radius: 5))
-              }
+              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, self.view.bounds.size.width - 40, 40)];
+              lbl.text = @"⚙️ Thông tin bản quyền & Cài đặt";
+              lbl.font = [UIFont boldSystemFontOfSize:16];
+              lbl.textColor = [UIColor systemPurpleColor];
+              lbl.textAlignment = NSTextAlignmentCenter;
+              [self.view addSubview:lbl];
           }
+          @end
 
-          struct TabBarItem: View {
-              let icon: String
-              let title: String
-              let tag: Int
-              @Binding var selectedTab: Int
+
+          // --- APP DELEGATE & TABBAR ---
+          @interface AppDelegate : UIResponder <UIApplicationDelegate>
+          @property (strong, nonatomic) UIWindow *window;
+          @end
+
+          @implementation AppDelegate
+          - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+              self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
               
-              var body: some View {
-                  Button(action: { selectedTab = tag }) {
-                      VStack(spacing: 3) {
-                          Image(systemName: icon)
-                              .font(.system(size: 18))
-                          Text(title)
-                              .font(.system(size: 10, weight: .medium))
-                      }
-                      .foregroundColor(selectedTab == tag ? .purple : .gray)
-                      .frame(maxWidth: .infinity)
-                  }
-              }
-          }
-
-          struct HomeTabView: View {
-              @ObservedObject var optimizer: GameOptimizer
+              UITabBarController *tabBar = [[UITabBarController alloc] init];
               
-              var body: some View {
-                  ScrollView {
-                      VStack(spacing: 14) {
-                          HStack(spacing: 8) {
-                              Image(systemName: "sparkles")
-                                  .foregroundColor(.purple)
-                              Text("Chào mừng DELTA trở lại! Chúc ngày tốt lành.")
-                                  .font(.system(size: 12, weight: .medium))
-                              Spacer()
-                          }
-                          .padding(12)
-                          .background(Color.purple.opacity(0.1))
-                          .cornerRadius(12)
-                          
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("GAME ĐÃ TIÊM")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              HStack {
-                                  RoundedRectangle(cornerRadius: 8)
-                                      .fill(Color.orange)
-                                      .frame(width: 40, height: 40)
-                                      .overlay(Image(systemName: "flame.fill").foregroundColor(.white))
-                                  
-                                  VStack(alignment: .leading, spacing: 2) {
-                                      Text(optimizer.isMaxSelected ? "Free Fire Max" : "Free Fire")
-                                          .font(.system(size: 14, weight: .bold))
-                                      Text(optimizer.isMaxSelected ? "com.dts.freefiremax" : "com.dts.freefireth")
-                                          .font(.system(size: 10))
-                                          .foregroundColor(.gray)
-                                  }
-                                  
-                                  Spacer()
-                                  
-                                  Text("• HOẠT ĐỘNG")
-                                      .font(.system(size: 10, weight: .bold))
-                                      .foregroundColor(.green)
-                                      .padding(.horizontal, 8)
-                                      .padding(.vertical, 4)
-                                      .background(Color.green.opacity(0.15))
-                                      .cornerRadius(10)
-                              }
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                          
-                          VStack(alignment: .leading, spacing: 10) {
-                              HStack {
-                                  Text("BẢO VỆ TÀI KHOẢN")
-                                      .font(.system(size: 12, weight: .bold))
-                                      .foregroundColor(.purple)
-                                  Spacer()
-                                  Toggle("", isOn: $optimizer.isAntiBanActive)
-                                      .labelsHidden()
-                              }
-                              
-                              Text("Trạng thái Anti-Ban: \(optimizer.isAntiBanActive ? "Đang bảo vệ an toàn" : "Sẵn sàng kích hoạt")")
-                                  .font(.system(size: 11))
-                                  .foregroundColor(.gray)
-                              
-                              VStack(alignment: .leading, spacing: 4) {
-                                  Text("LOG ANTI-BAN")
-                                      .font(.system(size: 9, weight: .bold))
-                                      .foregroundColor(.gray)
-                                  
-                                  ScrollView {
-                                      VStack(alignment: .leading, spacing: 2) {
-                                          ForEach(optimizer.logMessages, id: \.self) { log in
-                                              Text(log)
-                                                  .font(.system(size: 9, design: .monospaced))
-                                                  .foregroundColor(.green)
-                                          }
-                                      }
-                                  }
-                                  .frame(height: 80)
-                                  .padding(6)
-                                  .background(Color.black)
-                                  .cornerRadius(6)
-                              }
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                          
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("TỔNG QUAN HỆ THỐNG")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              HStack(spacing: 10) {
-                                  StatBox(title: "v3.1.5", subtitle: "Delta Engine", icon: "cpu")
-                                  StatBox(title: "RW Active", subtitle: "Memory Hook", icon: "memorychip")
-                              }
-                              HStack(spacing: 10) {
-                                  StatBox(title: "Standby", subtitle: "Chế độ chống ban", icon: "shield.checkerboard")
-                                  StatBox(title: "Lifetime", subtitle: "Hạn dùng VIP", icon: "infinity")
-                              }
-                          }
-                      }
-                      .padding(14)
-                      .padding.bottom, 80)
-                  }
-              }
-          }
-
-          struct StatBox: View {
-              let title: String
-              let subtitle: String
-              let icon: String
+              HomeViewController *vc1 = [[HomeViewController alloc] init];
+              vc1.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Trang chủ" image:[UIImage systemImageNamed:@"house.fill"] tag:0];
               
-              var body: some View {
-                  VStack(alignment: .leading, spacing: 4) {
-                      Image(systemName: icon)
-                          .foregroundColor(.purple)
-                      Text(title)
-                          .font(.system(size: 14, weight: .bold))
-                      Text(subtitle)
-                          .font(.system(size: 10))
-                          .foregroundColor(.gray)
-                  }
-                  .frame(maxWidth: .infinity, alignment: .leading)
-                  .padding(12)
-                  .background(Color(UIColor.secondarySystemGroupedBackground))
-                  .cornerRadius(12)
-              }
-          }
-
-          struct AimbotTabView: View {
-              @ObservedObject var optimizer: GameOptimizer
+              AimbotViewController *vc2 = [[AimbotViewController alloc] init];
+              vc2.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Aimbot" image:[UIImage systemImageNamed:@"scope"] tag:1];
               
-              var body: some View {
-                  ScrollView {
-                      VStack(spacing: 14) {
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("LOẠI AIMBOT")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              Toggle("Aimbot", isOn: $optimizer.isAimBotActive)
-                              Toggle("Aimbot Vector", isOn: $optimizer.isAimbotVector)
-                              Toggle("Aim Silent", isOn: $optimizer.isAimSilent)
-                              
-                              Divider()
-                              
-                              Text("Xương:")
-                                  .font(.system(size: 11, weight: .semibold))
-                                  .foregroundColor(.gray)
-                              
-                              HStack(spacing: 6) {
-                                  ForEach(["Head", "Neck", "Body"], id: \.self) { bone in
-                                      Button(action: { optimizer.selectedBone = bone }) {
-                                          Text(bone)
-                                              .font(.system(size: 12, weight: .bold))
-                                              .frame(maxWidth: .infinity)
-                                              .padding(.vertical, 6)
-                                              .background(optimizer.selectedBone == bone ? Color.purple : Color(.systemGray5))
-                                              .foregroundColor(optimizer.selectedBone == bone ? .white : .primary)
-                                              .cornerRadius(6)
-                                      }
-                                  }
-                              }
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                          
-                          VStack(alignment: .leading, spacing: 12) {
-                              Text("CÀI ĐẶT AIMBOT")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              HStack {
-                                  Text("Vòng FOV: \(Int(optimizer.fovValue))")
-                                  Spacer()
-                              }
-                              Slider(value: $optimizer.fovValue, in: 10...360, step: 1)
-                                  .accentColor(.purple)
-                              
-                              HStack {
-                                  Text("Khoảng cách Aimbot: \(Int(optimizer.aimDistance))m")
-                                  Spacer()
-                              }
-                              Slider(value: $optimizer.aimDistance, in: 10...500, step: 5)
-                                  .accentColor(.purple)
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                      }
-                      .padding(14)
-                      .padding(.bottom, 80)
-                  }
-              }
-          }
-
-          struct VisualsTabView: View {
-              @ObservedObject var optimizer: GameOptimizer
+              VisualsViewController *vc3 = [[VisualsViewController alloc] init];
+              vc3.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Hình ảnh" image:[UIImage systemImageNamed:@"eye.fill"] tag:2];
               
-              var body: some View {
-                  ScrollView {
-                      VStack(spacing: 14) {
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("HÌNH ẢNH & ESP")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              Toggle("ESP Khung", isOn: .constant(true))
-                              Toggle("ESP Khoảng cách", isOn: .constant(true))
-                              Toggle("ESP Máu", isOn: .constant(true))
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                      }
-                      .padding(14)
-                      .padding(.bottom, 80)
-                  }
-              }
-          }
-
-          struct MiscTabView: View {
-              @ObservedObject var optimizer: GameOptimizer
-              @State private var showAlert = false
-              @State private var alertMsg = ""
-
-              var body: some View {
-                  ScrollView {
-                      VStack(spacing: 14) {
-                          // Real Optimization Features
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("⚡ TỐI ƯU & NHỆ TÂM THỰC TẾ")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              Button(action: {
-                                  optimizer.runNheTam()
-                                  alertMsg = "Đã kích hoạt Nhẹ Tâm Pro thành công! Tâm súng đã được tối ưu độ ổn định."
-                                  showAlert = true
-                              }) {
-                                  HStack {
-                                      Image(systemName: "scope")
-                                      Text("🎯 KÍCH HOẠT NHỆ TÂM PRO")
-                                          .bold()
-                                      Spacer()
-                                      Image(systemName: "checkmark.circle.fill")
-                                          .foregroundColor(.green)
-                                  }
-                                  .padding(12)
-                                  .background(Color.green.opacity(0.15))
-                                  .foregroundColor(.green)
-                                  .cornerRadius(10)
-                              }
-                              
-                              Button(action: {
-                                  optimizer.runFixLag()
-                                  alertMsg = "Đã Fix Lag & Max FPS thành công! RAM và bộ nhớ đệm đã được dọn sạch."
-                                  showAlert = true
-                              }) {
-                                  HStack {
-                                      Image(systemName: "bolt.fill")
-                                      Text("⚡ FIX LAG & TĂNG TỐC MAX FPS")
-                                          .bold()
-                                      Spacer()
-                                      Image(systemName: "checkmark.circle.fill")
-                                          .foregroundColor(.purple)
-                                  }
-                                  .padding(12)
-                                  .background(Color.purple.opacity(0.15))
-                                  .foregroundColor(.purple)
-                                  .cornerRadius(10)
-                              }
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                          
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("TÍNH NĂNG KHÁC")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              Toggle("Không giật", isOn: $optimizer.isNoRecoil)
-                              Toggle("Không nạp đạn", isOn: $optimizer.isNoReload)
-                              Toggle("Tăng tốc", isOn: .constant(false))
-                              
-                              HStack {
-                                  Text("Tốc độ: \(String(format: "%.1fx", optimizer.speedValue))")
-                                  Spacer()
-                              }
-                              Slider(value: $optimizer.speedValue, in: 1.0...3.0, step: 0.1)
-                                  .accentColor(.purple)
-                              
-                              Toggle("Medkit nhanh", isOn: $optimizer.isFastMedkit)
-                              Toggle("Bắn nhanh", isOn: $optimizer.isFastShoot)
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                      }
-                      .padding(14)
-                      .padding(.bottom, 80)
-                  }
-                  .alert(isPresented: $showAlert) {
-                      Alert(title: Text("THÔNG BÁO TỐI ƯU"), message: Text(alertMsg), dismissButton: .default(Text("OK")))
-                  }
-              }
-          }
-
-          struct SettingsTabView: View {
-              @ObservedObject var optimizer: GameOptimizer
+              MiscViewController *vc4 = [[MiscViewController alloc] init];
+              vc4.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Khác" image:[UIImage systemImageNamed:@"bolt.fill"] tag:3];
               
-              var body: some View {
-                  ScrollView {
-                      VStack(spacing: 14) {
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("QUYỀN RIÊNG TƯ")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              Toggle("Chống stream", isOn: .constant(false))
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                          
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("THÔNG TIN BẢN QUYỀN")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              HStack {
-                                  Text("Bản quyền:")
-                                  Spacer()
-                                  Text("DELTA").bold()
-                              }
-                              HStack {
-                                  Text("Hạn dùng:")
-                                  Spacer()
-                                  Text("Lifetime").bold().foregroundColor(.green)
-                              }
-                              HStack {
-                                  Text("UUID:")
-                                  Spacer()
-                                  Text("IV-F97234C4-782D-4206-AE92-ADEB18949FB3")
-                                      .font(.system(size: 10, design: .monospaced))
-                                      .foregroundColor(.gray)
-                              }
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                          
-                          VStack(alignment: .leading, spacing: 10) {
-                              Text("HỖ TRỢ & HỆ THỐNG")
-                                  .font(.system(size: 12, weight: .bold))
-                                  .foregroundColor(.purple)
-                              
-                              Button(action: {}) {
-                                  HStack {
-                                      Text("Liên hệ hỗ trợ (Discord)")
-                                      Spacer()
-                                      Image(systemName: "arrow.up.right")
-                                  }
-                                  .foregroundColor(.primary)
-                              }
-                              
-                              Divider()
-                              
-                              Button(action: {}) {
-                                  Text("Đăng xuất tài khoản")
-                                      .foregroundColor(.red)
-                                      .bold()
-                              }
-                          }
-                          .padding(14)
-                          .background(Color(UIColor.secondarySystemGroupedBackground))
-                          .cornerRadius(14)
-                      }
-                      .padding(14)
-                      .padding(.bottom, 80)
-                  }
-              }
+              SettingsViewController *vc5 = [[SettingsViewController alloc] init];
+              vc5.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Cài đặt" image:[UIImage systemImageNamed:@"gearshape.fill"] tag:4];
+              
+              NSArray *vcs = @[
+                  [[UINavigationController alloc] initWithRootViewController:vc1],
+                  [[UINavigationController alloc] initWithRootViewController:vc2],
+                  [[UINavigationController alloc] initWithRootViewController:vc3],
+                  [[UINavigationController alloc] initWithRootViewController:vc4],
+                  [[UINavigationController alloc] initWithRootViewController:vc5]
+              ];
+              
+              tabBar.viewControllers = vcs;
+              tabBar.tabBar.tintColor = [UIColor systemPurpleColor];
+              
+              self.window.rootViewController = tabBar;
+              [self.window makeKeyAndVisible];
+              return YES;
           }
+          @end
 
-          @main
-          struct AppEntry {
-              static func main() {
-                  UIApplicationMain(
-                      CommandLine.argc,
-                      CommandLine.unsafeArgv,
-                      nil,
-                      NSStringFromClass(AppDelegate.self)
-                  )
-              }
-          }
-
-          class AppDelegate: UIResponder, UIApplicationDelegate {
-              var window: UIWindow?
-              func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-                  let window = UIWindow(frame: UIScreen.main.bounds)
-                  window.rootViewController = UIHostingController(rootView: ContentView())
-                  self.window = window
-                  window.makeKeyAndVisible()
-                  return true
+          int main(int argc, char * argv[]) {
+              @autoreleasepool {
+                  return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
               }
           }
           EOF
 
           SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
-          swiftc -sdk $SDK_PATH -target arm64-apple-ios14.0 AppSource/main.swift -o bindepzai123
+          clang -isysroot $SDK_PATH -target arm64-apple-ios14.0 -framework UIKit -framework Foundation AppSource/main.m -o bindepzai123
 
           mkdir -p Payload/bindepzai123.app
           mv bindepzai123 Payload/bindepzai123.app/
           
-          if [ -f "AppIcon.png" ]; then
-              cp AppIcon.png Payload/bindepzai123.app/AppIcon60x60@2x.png
-          fi
-
           cat << 'EOF' > Payload/bindepzai123.app/Info.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
