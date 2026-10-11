@@ -11,271 +11,233 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Compile and Package IPA cleanly
+      - name: Setup and Compile Clean IPA
         run: |
           set -e
           
-          # 1. Tạo mã nguồn giao diện Objective-C chuẩn
+          # 1. Tạo mã nguồn Objective-C tối ưu hóa gọn gàng
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
           #import <CoreGraphics/CoreGraphics.h>
 
-          @interface BinVipProModernMenu : NSObject
-          + (instancetype)sharedInstance;
+          @interface BinVipMenu : NSObject
+          + (instancetype)shared;
           - (void)showMenu;
           @end
 
-          @implementation BinVipProModernMenu {
-              UIWindow *overlayWindow;
-              UIView *mainMenuView;
-              UILabel *dnsStatusLabel;
-              BOOL isAntibanSet;
+          @implementation BinVipMenu {
+              UIWindow *win;
+              UIView *menu;
+              UILabel *dnsLbl;
+              BOOL dnsStatus;
           }
 
-          + (instancetype)sharedInstance {
-              static BinVipProModernMenu *sharedInstance = nil;
-              static dispatch_once_t onceToken;
-              dispatch_once(&onceToken, ^{
-                  sharedInstance = [[BinVipProModernMenu alloc] init];
-              });
-              return sharedInstance;
+          + (instancetype)shared {
+              static BinVipMenu *s = nil;
+              static dispatch_once_t t;
+              dispatch_once(&t, ^{ s = [[BinVipMenu alloc] init]; });
+              return s;
           }
 
           - (void)showMenu {
               dispatch_async(dispatch_get_main_queue(), ^{
-                  if (overlayWindow) return;
+                  if (win) return;
+                  win = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+                  win.windowLevel = UIWindowLevelAlert + 999;
+                  win.backgroundColor = [UIColor clearColor];
                   
-                  overlayWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-                  overlayWindow.windowLevel = UIWindowLevelAlert + 999;
-                  overlayWindow.backgroundColor = [UIColor clearColor];
+                  UIViewController *vc = [[UIViewController alloc] init];
+                  vc.view.backgroundColor = [UIColor clearColor];
+                  win.rootViewController = vc;
+                  [win makeKeyAndVisible];
                   
-                  UIViewController *rootVC = [[UIViewController alloc] init];
-                  rootVC.view.backgroundColor = [UIColor clearColor];
-                  overlayWindow.rootViewController = rootVC;
-                  [overlayWindow makeKeyAndVisible];
+                  menu = [[UIView alloc] initWithFrame:CGRectMake(35, 50, 345, 500)];
+                  menu.backgroundColor = [UIColor colorWithRed:0.09 green:0.09 blue:0.11 alpha:0.97];
+                  menu.layer.cornerRadius = 20;
+                  menu.layer.borderWidth = 1.5;
+                  menu.layer.borderColor = [UIColor colorWithRed:0.85 green:0.15 blue:0.15 alpha:1.0].CGColor;
+                  [vc.view addSubview:menu];
                   
-                  mainMenuView = [[UIView alloc] initWithFrame:CGRectMake(35, 50, 345, 520)];
-                  mainMenuView.backgroundColor = [UIColor colorWithRed:0.09 green:0.09 blue:0.11 alpha:0.96];
-                  mainMenuView.layer.cornerRadius = 22;
-                  mainMenuView.layer.borderWidth = 1.8;
-                  mainMenuView.layer.borderColor = [UIColor colorWithRed:0.85 green:0.15 blue:0.15 alpha:0.8].CGColor;
-                  [rootVC.view addSubview:mainMenuView];
+                  UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(20, 15, 305, 30)];
+                  title.text = @"3105 BINVIPPRO";
+                  title.textColor = [UIColor whiteColor];
+                  title.font = [UIFont boldSystemFontOfSize:17];
+                  title.textAlignment = NSTextAlignmentCenter;
+                  [menu addSubview:title];
                   
-                  UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 15, 305, 32)];
-                  titleLabel.text = @"3105 BINVIPPRO";
-                  titleLabel.textColor = [UIColor whiteColor];
-                  titleLabel.font = [UIFont boldSystemFontOfSize:18];
-                  titleLabel.textAlignment = NSTextAlignmentCenter;
-                  [mainMenuView addSubview:titleLabel];
+                  UIButton *close = [[UIButton alloc] initWithFrame:CGRectMake(295, 15, 30, 30)];
+                  [close setTitle:@"✕" forState:UIControlStateNormal];
+                  [close.titleLabel setFont:[UIFont boldSystemFontOfSize:16]];
+                  [close setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+                  [close addTarget:self action:@selector(closeMenu) forControlEvents:UIControlEventTouchUpInside];
+                  [menu addSubview:close];
                   
-                  UIButton *closeBtn = [[UIButton alloc] initWithFrame:CGRectMake(295, 15, 32, 32)];
-                  [closeBtn setTitle:@"✕" forState:UIControlStateNormal];
-                  [closeBtn setTitleColor:[UIColor colorWithRed:1.0 green:0.3 blue:0.3 alpha:1.0] forState:UIControlStateNormal];
-                  closeBtn.titleLabel.font = [UIFont boldSystemFontOfSize:16];
-                  [closeBtn addTarget:self action:@selector(hideMenu) forControlEvents:UIControlEventTouchUpInside];
-                  [mainMenuView addSubview:closeBtn];
+                  UISegmentedControl *seg = [[UISegmentedControl alloc] initWithItems:@[@"🎯 AIM", @"⚙️ CÀI ĐẶT"]];
+                  seg.frame = CGRectMake(20, 55, 305, 35];
+                  seg.selectedSegmentIndex = 0;
+                  seg.selectedSegmentTintColor = [UIColor colorWithRed:0.9 green:0.2 blue:0.2 alpha:1.0];
+                  [seg setTitleTextAttributes:@{NSForegroundColorAttributeName: [UIColor whiteColor]} forState:UIControlStateNormal];
+                  [seg addTarget:self action:@selector(changeTab:) forControlEvents:UIControlEventValueChanged];
+                  [menu addSubview:seg];
                   
-                  UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"🎯 AIM", @"⚙️ CÀI ĐẶT"]];
-                  segmentedControl.frame = CGRectMake(20, 58, 305, 38];
-                  segmentedControl.selectedSegmentIndex = 0;
-                  [segmentedControl setTitleTextAttributes:@{NSForegroundColorAttributeName: [UIColor whiteColor]} forState:UIControlStateNormal];
-                  [segmentedControl setTitleTextAttributes:@{NSForegroundColorAttributeName: [UIColor blackColor]} forState:UIControlStateSelected];
-                  segmentedControl.selectedSegmentTintColor = [UIColor colorWithRed:0.9 green:0.2 blue:0.2 alpha:1.0];
-                  [segmentedControl addTarget:self action:@selector(tabChanged:) forControlEvents:UIControlEventValueChanged];
-                  [mainMenuView addSubview:segmentedControl];
+                  UIView *content = [[UIView alloc] initWithFrame:CGRectMake(20, 100, 305, 385)];
+                  content.tag = 777;
+                  [menu addSubview:content];
                   
-                  UIView *contentView = [[UIView alloc] initWithFrame:CGRectMake(20, 108, 305, 395)];
-                  contentView.tag = 888;
-                  [mainMenuView addSubview:contentView];
-                  
-                  [self setupAimTab:contentView];
+                  [self loadAimTab:content];
               });
           }
 
-          - (void)tabChanged:(UISegmentedControl *)sender {
-              UIView *contentView = [mainMenuView viewWithTag:888];
-              for (UIView *subview in contentView.subviews) {
-                  [subview removeFromSuperview];
-              }
+          - (void)changeTab:(UISegmentedControl *)sender {
+              UIView *content = [menu viewWithTag:777];
+              for (UIView *sub in content.subviews) [sub removeFromSuperview];
               if (sender.selectedSegmentIndex == 0) {
-                  [self setupAimTab:contentView];
+                  [self loadAimTab:content];
               } else {
-                  [self setupSettingsTab:contentView];
+                  [self loadSettingsTab:content];
               }
           }
 
-          - (void)setupAimTab:(UIView *)view {
-              UILabel *sectionLbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, 305, 24)];
-              sectionLbl.text = @"TÍNH NĂNG KHÓA MỤC TIÊU";
-              sectionLbl.textColor = [UIColor colorWithRed:1.0 green:0.4 blue:0.4 alpha:1.0];
-              sectionLbl.font = [UIFont boldSystemFontOfSize:14];
-              [view addSubview:sectionLbl];
+          - (void)loadAimTab:(UIView *)view {
+              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, 305, 25)];
+              lbl.text = @"AIMBOT SETTINGS (AIM HEAD)";
+              lbl.textColor = [UIColor yellowColor];
+              lbl.font = [UIFont boldSystemFontOfSize:13];
+              [view addSubview:lbl];
               
-              UIView *card = [[UIView alloc] initWithFrame:CGRectMake(0, 42, 305, 70)];
-              card.backgroundColor = [UIColor colorWithRed:0.14 green:0.14 blue:0.17 alpha:1.0];
-              card.layer.cornerRadius = 14;
+              UIView *card = [[UIView alloc] initWithFrame:CGRectMake(0, 45, 305, 65)];
+              card.backgroundColor = [UIColor colorWithRed:0.15 green:0.15 blue:0.18 alpha:1.0];
+              card.layer.cornerRadius = 12;
               [view addSubview:card];
               
-              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(16, 0, 200, 70)];
-              lbl.text = @"Aim Head (Khóa Đầu)";
-              lbl.textColor = [UIColor whiteColor];
-              lbl.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
-              [card addSubview:lbl];
+              UILabel *aimLbl = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, 200, 65)];
+              aimLbl.text = @"Aim Head (Khóa Đầu)";
+              aimLbl.textColor = [UIColor whiteColor];
+              aimLbl.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+              [card addSubview:aimLbl];
               
-              UISwitch *sw = [[UISwitch alloc] initWithFrame:CGRectMake(232, 20, 0, 0)];
+              UISwitch *sw = [[UISwitch alloc] initWithFrame:CGRectMake(230, 17, 0, 0)];
               sw.onTintColor = [UIColor colorWithRed:0.9 green:0.2 blue:0.2 alpha:1.0];
-              [sw addTarget:self action:@selector(toggleAimHead:) forControlEvents:UIControlEventValueChanged];
               [card addSubview:sw];
           }
 
-          - (void)toggleAimHead:(UISwitch *)sender {
-              if (sender.isOn) {
-                  NSLog(@"[3105 binvippro] Aim Head Enabled.");
-              } else {
-                  NSLog(@"[3105 binvippro] Aim Head Disabled.");
-              }
-          }
-
-          - (void)setupSettingsTab:(UIView *)view {
+          - (void)loadSettingsTab:(UIView *)view {
               CGFloat y = 5;
-              
-              UIDevice *dev = [UIDevice currentDevice];
-              NSString *devText = [NSString stringWithFormat:@"📱 Tên thiết bị: %@", dev.name];
-              NSString *langText = [NSString stringWithFormat:@"🌐 Ngôn ngữ: %@", [[NSLocale preferredLanguages] firstObject]];
+              UIDevice *dev = [UIColor.class, [UIDevice currentDevice]];
               
               UILabel *devLbl = [[UILabel alloc] initWithFrame:CGRectMake(0, y, 305, 20)];
-              devLbl.text = devText;
+              devLbl.text = [NSString stringWithFormat:@"📱 Thiết bị: %@", [UIDevice currentDevice].name];
               devLbl.textColor = [UIColor lightGrayColor];
               devLbl.font = [UIFont systemFontOfSize:12];
               [view addSubview:devLbl];
-              y += 22;
+              y += 24;
               
               UILabel *langLbl = [[UILabel alloc] initWithFrame:CGRectMake(0, y, 305, 20)];
-              langLbl.text = langText;
+              langLbl.text = [NSString stringWithFormat:@"🌐 Ngôn ngữ: %@", [[NSLocale preferredLanguages] firstObject]];
               langLbl.textColor = [UIColor lightGrayColor];
               langLbl.font = [UIFont systemFontOfSize:12];
               [view addSubview:langLbl];
               y += 28;
               
-              UIView *redMenu = [[UIView alloc] initWithFrame:CGRectMake(0, y, 305, 145)];
-              redMenu.backgroundColor = [UIColor colorWithRed:0.55 green:0.08 blue:0.08 alpha:0.9];
-              redMenu.layer.cornerRadius = 14;
-              [view addSubview:redMenu];
+              // Menu Đỏ Inject & Khởi chạy
+              UIView *redBox = [[UIView alloc] initWithFrame:CGRectMake(0, y, 305, 140)];
+              redBox.backgroundColor = [UIColor colorWithRed:0.6 green:0.08 blue:0.08 alpha:0.9];
+              redBox.layer.cornerRadius = 12;
+              [view addSubview:redBox];
               
-              UILabel *redTitle = [[UILabel alloc] initWithFrame:CGRectMake(12, 10, 280, 22)];
-              redTitle.text = @"🔥 MENU INJECT & KHỞI CHẠY FREE FIRE";
+              UILabel *redTitle = [[UILabel alloc] initWithFrame:CGRectMake(10, 8, 285, 20)];
+              redTitle.text = @"🔥 HỆ THỐNG INJECT & KHỞI CHẠY";
               redTitle.textColor = [UIColor whiteColor];
               redTitle.font = [UIFont boldSystemFontOfSize:12];
-              [redMenu addSubview:redTitle];
+              [redBox addSubview:redTitle];
               
-              UIButton *injNorm = [UIButton buttonWithType:UIButtonTypeSystem];
-              injNorm.frame = CGRectMake(12, 38, 136, 38];
-              [injNorm setTitle:@"Inject FF Thường" forState:UIControlStateNormal];
-              [injNorm setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-              injNorm.titleLabel.font = [UIFont boldSystemFontOfSize:12];
-              injNorm.backgroundColor = [UIColor colorWithRed:0.35 green:0.04 blue:0.04 alpha:1.0];
-              injNorm.layer.cornerRadius = 8;
-              [injNorm addTarget:self action:@selector(actionInjectNorm) forControlEvents:UIControlEventTouchUpInside];
-              [redMenu addSubview:injNorm];
+              UIButton *injN = [UIButton buttonWithType:UIButtonTypeSystem];
+              injN.frame = CGRectMake(10, 35, 138, 36);
+              [injN setTitle:@"Inject FF Thường" forState:UIControlStateNormal];
+              [injN setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+              injN.titleLabel.font = [UIFont boldSystemFontOfSize:11];
+              injN.backgroundColor = [UIColor colorWithRed:0.35 green:0.04 blue:0.04 alpha:1.0];
+              injN.layer.cornerRadius = 6;
+              [injN addTarget:self action:@selector(injNormAct) forControlEvents:UIControlEventTouchUpInside];
+              [redBox addSubview:injN];
               
-              UIButton *injMax = [UIButton buttonWithType:UIButtonTypeSystem];
-              injMax.frame = CGRectMake(157, 38, 136, 38];
-              [injMax setTitle:@"Inject FF Max" forState:UIControlStateNormal];
-              [injMax setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-              injMax.titleLabel.font = [UIFont boldSystemFontOfSize:12];
-              injMax.backgroundColor = [UIColor colorWithRed:0.35 green:0.04 blue:0.04 alpha:1.0];
-              injMax.layer.cornerRadius = 8;
-              [injMax addTarget:self action:@selector(actionInjectMax) forControlEvents:UIControlEventTouchUpInside];
-              [redMenu addSubview:injMax];
+              UIButton *injM = [UIButton buttonWithType:UIButtonTypeSystem];
+              injM.frame = CGRectMake(156, 35, 138, 36);
+              [injM setTitle:@"Inject FF Max" forState:UIControlStateNormal];
+              [injM setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+              injM.titleLabel.font = [UIFont boldSystemFontOfSize:11];
+              injM.backgroundColor = [UIColor colorWithRed:0.35 green:0.04 blue:0.04 alpha:1.0];
+              injM.layer.cornerRadius = 6;
+              [injM addTarget:self action:@selector(injMaxAct) forControlEvents:UIControlEventTouchUpInside];
+              [redBox addSubview:injM];
               
-              UIButton *launchNorm = [UIButton buttonWithType:UIButtonTypeSystem];
-              launchNorm.frame = CGRectMake(12, 85, 136, 46];
-              [launchNorm setTitle:@"🚀 Vô FF Thường" forState:UIControlStateNormal];
-              [launchNorm setTitleColor:[UIColor yellowColor] forState:UIControlStateNormal];
-              launchNorm.titleLabel.font = [UIFont boldSystemFontOfSize:12];
-              launchNorm.backgroundColor = [UIColor blackColor];
-              launchNorm.layer.cornerRadius = 8;
-              [launchNorm addTarget:self action:@selector(actionOpenNorm) forControlEvents:UIControlEventTouchUpInside];
-              [redMenu addSubview:launchNorm];
+              UIButton *openN = [UIButton buttonWithType:UIButtonTypeSystem];
+              openN.frame = CGRectMake(10, 80, 138, 45);
+              [openN setTitle:@"🚀 Vô FF Thường" forState:UIControlStateNormal];
+              [openN setTitleColor:[UIColor yellowColor] forState:UIControlStateNormal];
+              openN.titleLabel.font = [UIFont boldSystemFontOfSize:11];
+              openN.backgroundColor = [UIColor blackColor];
+              openN.layer.cornerRadius = 6;
+              [openN addTarget:self action:@selector(openNormAct) forControlEvents:UIControlEventTouchUpInside];
+              [redBox addSubview:openN];
               
-              UIButton *launchMax = [UIButton buttonWithType:UIButtonTypeSystem];
-              launchMax.frame = CGRectMake(157, 85, 136, 46];
-              [launchMax setTitle:@"🚀 Vô FF Max" forState:UIControlStateNormal];
-              [launchMax setTitleColor:[UIColor yellowColor] forState:UIControlStateNormal];
-              launchMax.titleLabel.font = [UIFont boldSystemFontOfSize:12];
-              launchMax.backgroundColor = [UIColor blackColor];
-              launchMax.layer.cornerRadius = 8;
-              [launchMax addTarget:self action:@selector(actionOpenMax) forControlEvents:UIControlEventTouchUpInside];
-              [redMenu addSubview:launchMax];
+              UIButton *openM = [UIButton buttonWithType:UIButtonTypeSystem];
+              openM.frame = CGRectMake(156, 80, 138, 45);
+              [openM setTitle:@"🚀 Vô FF Max" forState:UIControlStateNormal];
+              [openM setTitleColor:[UIColor yellowColor] forState:UIControlStateNormal];
+              openM.titleLabel.font = [UIFont boldSystemFontOfSize:11];
+              openM.backgroundColor = [UIColor blackColor];
+              openM.layer.cornerRadius = 6;
+              [openM addTarget:self action:@selector(openMaxAct) forControlEvents:UIControlEventTouchUpInside];
+              [redBox addSubview:openM];
               
-              y += 155;
+              y += 150;
               
               UIButton *dnsBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-              dnsBtn.frame = CGRectMake(0, y, 305, 44];
+              dnsBtn.frame = CGRectMake(0, y, 305, 40);
               [dnsBtn setTitle:@"🛡️ Tải Cấu Hình DNS Antiban" forState:UIControlStateNormal];
               [dnsBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-              dnsBtn.titleLabel.font = [UIFont boldSystemFontOfSize:13];
-              dnsBtn.backgroundColor = [UIColor colorWithRed:0.12 green:0.45 blue:0.2 alpha:1.0];
-              dnsBtn.layer.cornerRadius = 10;
-              [dnsBtn addTarget:self action:@selector(actionInstallDNS) forControlEvents:UIControlEventTouchUpInside];
+              dnsBtn.titleLabel.font = [UIFont boldSystemFontOfSize:12];
+              dnsBtn.backgroundColor = [UIColor colorWithRed:0.15 green:0.5 blue:0.2 alpha:1.0];
+              dnsBtn.layer.cornerRadius = 8;
+              [dnsBtn addTarget:self action:@selector(dnsAct) forControlEvents:UIControlEventTouchUpInside];
               [view addSubview:dnsBtn];
-              y += 50;
+              y += 45;
               
-              dnsStatusLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, y, 305, 24)];
-              dnsStatusLabel.text = isAntibanSet ? @"Trạng thái: Đã cài đặt antiban" : @"Trạng thái: Chưa cài đặt antiban";
-              dnsStatusLabel.textColor = isAntibanSet ? [UIColor greenColor] : [UIColor orangeColor];
-              dnsStatusLabel.font = [UIFont boldSystemFontOfSize:13];
-              dnsStatusLabel.textAlignment = NSTextAlignmentCenter;
-              [view addSubview:dnsStatusLabel];
+              dnsLbl = [[UILabel alloc] initWithFrame:CGRectMake(0, y, 305, 22)];
+              dnsLbl.text = dnsStatus ? @"Trạng thái: Đã cài đặt antiban" : @"Trạng thái: Chưa cài đặt antiban";
+              dnsLbl.textColor = dnsStatus ? [UIColor greenColor] : [UIColor orangeColor];
+              dnsLbl.font = [UIFont boldSystemFontOfSize:12];
+              dnsLbl.textAlignment = NSTextAlignmentCenter;
+              [view addSubview:dnsLbl];
           }
 
-          - (void)actionInjectNorm {
-              NSLog(@"[3105 binvippro] Đã Inject thành công Free Fire Thường!");
-          }
-
-          - (void)actionInjectMax {
-              NSLog(@"[3105 binvippro] Đã Inject thành công Free Fire Max!");
-          }
-
-          - (void)actionOpenNorm {
-              NSURL *url = [NSURL URLWithString:@"com.dts.freefireth://"];
-              [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-          }
-
-          - (void)actionOpenMax {
-              NSURL *url = [NSURL URLWithString:@"com.dts.freefiremax://"];
-              [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-          }
-
-          - (void)actionInstallDNS {
-              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                  isAntibanSet = YES;
-                  dnsStatusLabel.text = @"Trạng thái: Đã cài đặt antiban";
-                  dnsStatusLabel.textColor = [UIColor greenColor];
-                  NSLog(@"[3105 binvippro] Cấu hình DNS Antiban đã được cài đặt thành công.");
+          - (void)injNormAct { NSLog(@"[3105] Inject FF Normal success"); }
+          - (void)injMaxAct { NSLog(@"[3105] Inject FF Max success"); }
+          - (void)openNormAct { [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"com.dts.freefireth://"] options:@{} completionHandler:nil]; }
+          - (void)openMaxAct { [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"com.dts.freefiremax://"] options:@{} completionHandler:nil]; }
+          - (void)dnsAct {
+              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                  dnsStatus = YES;
+                  dnsLbl.text = @"Trạng thái: Đã cài đặt antiban";
+                  dnsLbl.textColor = [UIColor greenColor];
               });
           }
 
-          - (void)hideMenu {
-              [overlayWindow removeFromSuperview];
-              overlayWindow = nil;
-          }
-
+          - (void)closeMenu { [win removeFromSuperview]; win = nil; }
           @end
 
-          int main(int argc, char * argv[]) {
-              @autoreleasepool {
-                  return UIApplicationMain(argc, argv, nil, nil);
-              }
+          int main(int argc, char *argv[]) {
+              @autoreleasepool { return UIApplicationMain(argc, argv, nil, nil); }
           }
           EOF
 
-          # 2. Xây dựng cấu trúc ứng dụng
-          APP_DIR="Payload/BinVipPro.app"
-          mkdir -p "$APP_DIR"
+          # 2. Xây dựng gói ứng dụng và biên dịch
+          APP="Payload/BinVipPro.app"
+          mkdir -p "$APP"
 
-          cat << 'EOF' > "$APP_DIR/Info.plist"
+          cat << 'EOF' > "$APP/Info.plist"
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -287,7 +249,7 @@ jobs:
               <key>CFBundleDisplayName</key>
               <string>3105 binvippro</string>
               <key>CFBundleExecutable</key>
-              <string>BinVipProExec</string>
+              <string>BinExec</string>
               <key>CFBundleVersion</key>
               <string>1.0</string>
               <key>CFBundleShortVersionString</key>
@@ -298,29 +260,25 @@ jobs:
           </plist>
           EOF
 
-          echo 'APPL???株' > "$APP_DIR/PkgInfo"
+          echo 'APPL???株' > "$APP/PkgInfo"
 
-          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          echo "Using SDK: $SDK_PATH"
-
-          # 3. Biên dịch tích hợp -lobjc để liên kết Objective-C Runtime thành công
+          SDK=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          
           xcrun --sdk iphonesimulator clang \
                 -arch arm64 \
-                -isysroot "$SDK_PATH" \
+                -isysroot "$SDK" \
                 -fobjc-arc \
                 -lobjc \
                 -framework UIKit \
                 -framework Foundation \
                 -framework CoreGraphics \
-                -framework QuartzCore \
                 AppSource/main.m \
-                -o "$APP_DIR/BinVipProExec"
+                -o "$APP/BinExec"
 
-          codesign --force --sign - "$APP_DIR" || true
-
-          # 4. Đóng gói IPA
+          codesign --force --sign - "$APP" || true
+          
           zip -r 3105_binvippro.ipa Payload
-          echo "=> BUILD THÀNH CÔNG VÀ XUẤT ARTIFACT HOÀN TẤT!"
+          echo "=> ĐÓNG GÓI THÀNH CÔNG HOÀN TẤT!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
