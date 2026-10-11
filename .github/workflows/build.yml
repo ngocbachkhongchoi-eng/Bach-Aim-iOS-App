@@ -1,4 +1,4 @@
-name: Build IPA bindepzai123
+name: Build Full IPA bindepzai123
 
 on:
   workflow_dispatch:
@@ -11,11 +11,131 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Create IPA Structure
+      - name: Create iOS App Swift Source & Compile
         run: |
+          mkdir -p AppSource
+          cat << 'EOF' > AppSource/main.swift
+          import SwiftUI
+
+          struct LoginView: View {
+              @State private var keyInput = ""
+              @State private var isLoggedIn = false
+              @State private var showError = false
+
+              var body: some View {
+                  if isLoggedIn {
+                      MainView()
+                  } else {
+                      ZStack {
+                          Color.red.edgesIgnoringSafeArea(.all)
+                          VStack(spacing: 20) {
+                              Text("bindepzai123")
+                                  .font(.largeTitle)
+                                  .bold()
+                                  .foregroundColor(.white)
+                              
+                              SecureField("Nhập Key...", text: $keyInput)
+                                  .textFieldStyle(RoundedBorderTextFieldStyle())
+                                  .padding(.horizontal, 40)
+                              
+                              Button(action: {
+                                  if keyInput == "bindepzai123" {
+                                      isLoggedIn = true
+                                  } else {
+                                      showError = true
+                                  }
+                              }) {
+                                  Text("Đăng nhập")
+                                      .font(.headline)
+                                      .foregroundColor(.red)
+                                      .padding()
+                                      .background(Color.white)
+                                      .cornerRadius(10)
+                              }
+                              
+                              if showError {
+                                  Text("Key không chính xác!")
+                                      .foregroundColor(.yellow)
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+
+          struct MainView: View {
+              var body: some View {
+                  ZStack {
+                      Color.blue.edgesIgnoringSafeArea(.all)
+                      VStack(spacing: 20) {
+                          Text("Giao diện chính")
+                              .font(.title)
+                              .bold()
+                              .foregroundColor(.white)
+                          
+                          Text("Công cụ IPA | Quản lý Chứng chỉ | Thư viện")
+                              .foregroundColor(.white)
+                      }
+                  }
+              }
+          }
+
+          @main
+          struct AppEntry {
+              static func main() {
+                  UIApplicationMain(
+                      CommandLine.argc,
+                      CommandLine.unsafeArgv,
+                      nil,
+                      NSStringFromClass(AppDelegate.self)
+                  )
+              }
+          }
+
+          class AppDelegate: UIResponder, UIApplicationDelegate {
+              var window: UIWindow?
+              func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+                  let window = UIWindow(frame: UIScreen.main.bounds)
+                  window.rootViewController = UIHostingController(rootView: LoginView())
+                  self.window = window
+                  window.makeKeyAndVisible()
+                  return true
+              }
+          }
+          EOF
+
+          # Biên dịch Swift ra Binary thực thi cho iOS ARM64
+          xcrun -sdk iphoneos swiftc AppSource/main.swift -o bindepzai123 -target arm64-apple-ios14.0
+
+          # Đóng gói cấu trúc Payload IPA chuẩn
           mkdir -p Payload/bindepzai123.app
-          echo '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>com.bindepzai123.app</string><key>CFBundleExecutable</key><string>bindepzai123</string></dict></plist>' > Payload/bindepzai123.app/Info.plist
-          echo 'Mach-O binary file' > Payload/bindepzai123.app/bindepzai123
+          mv bindepzai123 Payload/bindepzai123.app/
+          
+          cat << 'EOF' > Payload/bindepzai123.app/Info.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>bindepzai123</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.bindepzai123.app</string>
+              <key>CFBundleName</key>
+              <string>bindepzai123</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0</string>
+              <key>CFBundleVersion</key>
+              <string>1</string>
+              <key>LSRequiresIPhoneOS</key>
+              <true/>
+              <key>MinimumOSVersion</key>
+              <string>14.0</string>
+          </dict>
+          </plist>
+          EOF
+
           zip -r bindepzai123.ipa Payload
 
       - name: Upload IPA Artifact
