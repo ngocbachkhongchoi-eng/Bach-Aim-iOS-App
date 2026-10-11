@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create iOS Swift App
+      - name: Create iOS Swift App with Pro UI & FF Menu
         run: |
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.swift
@@ -28,36 +28,61 @@ jobs:
                       MainView()
                   } else {
                       ZStack {
-                          Color.red.edgesIgnoringSafeArea(.all)
-                          VStack(spacing: 20) {
-                              Text("bindepzai123")
-                                  .font(.largeTitle)
-                                  .bold()
-                                  .foregroundColor(.white)
+                          LinearGradient(gradient: Gradient(colors: [Color(red: 0.8, green: 0.1, blue: 0.1), Color(red: 0.4, green: 0.0, blue: 0.0)]), startPoint: .top, endPoint: .bottom)
+                              .edgesIgnoringSafeArea(.all)
+                          
+                          VStack(spacing: 30) {
+                              VStack(spacing: 8) {
+                                  Text("BINDÉPZAI 123")
+                                      .font(.system(size: 36, weight: .black, design: .rounded))
+                                      .foregroundColor(.white)
+                                      .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 3)
+                                  
+                                  Text("VIP GAMING & IPA HUB")
+                                      .font(.subheadline)
+                                      .bold()
+                                      .foregroundColor(.white.opacity(0.8))
+                              }
                               
-                              SecureField("Nhập Key...", text: $keyInput)
-                                  .textFieldStyle(RoundedBorderTextFieldStyle())
-                                  .padding(.horizontal, 40)
-                              
-                              Button(action: {
-                                  if keyInput == "bindepzai123" {
-                                      isLoggedIn = true
-                                  } else {
-                                      showError = true
-                                  }
-                              }) {
-                                  Text("Đăng nhập")
-                                      .font(.headline)
-                                      .foregroundColor(.red)
+                              VStack(spacing: 20) {
+                                  SecureField("Nhập Key Bản Quyền...", text: $keyInput)
                                       .padding()
-                                      .background(Color.white)
-                                      .cornerRadius(10)
+                                      .background(Color.white.opacity(0.95))
+                                      .cornerRadius(14)
+                                      .font(.headline)
+                                      .foregroundColor(.black)
+                                      .autocapitalization(.none)
+                                      .shadow(radius: 3)
+                                  
+                                  Button(action: {
+                                      if keyInput == "bindepzai123" {
+                                          isLoggedIn = true
+                                      } else {
+                                          showError = true
+                                      }
+                                  }) {
+                                      Text("XÁC NHẬN ĐĂNG NHẬP")
+                                          .font(.headline)
+                                          .bold()
+                                          .foregroundColor(.white)
+                                          .frame(maxWidth: .infinity)
+                                          .padding()
+                                          .background(LinearGradient(gradient: Gradient(colors: [Color.orange, Color.red]), startPoint: .leading, endPoint: .trailing))
+                                          .cornerRadius(14)
+                                          .shadow(color: .black.opacity(0.4), radius: 5, x: 0, y: 3)
+                                  }
+                                  
+                                  if showError {
+                                      Text("⚠️ Key không chính xác, thử lại nhé!")
+                                          .font(.subheadline)
+                                          .bold()
+                                          .foregroundColor(.yellow)
+                                  }
                               }
-                              
-                              if showError {
-                                  Text("Key không chính xác!")
-                                      .foregroundColor(.yellow)
-                              }
+                              .padding(25)
+                              .background(Color.black.opacity(0.4))
+                              .cornerRadius(22)
+                              .padding(.horizontal, 20)
                           }
                       }
                   }
@@ -65,19 +90,146 @@ jobs:
           }
 
           struct MainView: View {
+              @State private var importedFiles: [String] = ["bindepzai123_v1.ipa"]
+              @State private var certStatus = "Chưa có chứng chỉ"
+              @State private var showAlert = false
+              @State private var alertMessage = ""
+              
+              // FF Menu States
+              @State private var isFixLagEnabled = false
+              @State private var isFixSuperLagEnabled = false
+              @State private var isNheTamEnabled = false
+
               var body: some View {
-                  ZStack {
-                      Color.blue.edgesIgnoringSafeArea(.all)
-                      VStack(spacing: 20) {
-                          Text("Giao diện chính")
-                              .font(.title)
-                              .bold()
-                              .foregroundColor(.white)
-                          
-                          Text("Công cụ IPA | Quản lý Chứng chỉ")
-                              .foregroundColor(.white)
+                  NavigationView {
+                      ZStack {
+                          Color.blue.edgesIgnoringSafeArea(.all)
+                          List {
+                              // MENU FREE FIRE
+                              Section(header: Text("🔥 MENU FREE FIRE (MAX & THƯỜNG)").foregroundColor(.white).bold()) {
+                                  HStack(spacing: 12) {
+                                      Button(action: {
+                                          alertMessage = "Đã Inject thành công FF Max!"
+                                          showAlert = true
+                                      }) {
+                                          Text("Inject FF Max")
+                                              .bold()
+                                              .frame(maxWidth: .infinity)
+                                              .padding(10)
+                                              .background(Color.orange)
+                                              .foregroundColor(.white)
+                                              .cornerRadius(10)
+                                      }
+                                      
+                                      Button(action: {
+                                          alertMessage = "Đã Inject thành công FF Thường!"
+                                          showAlert = true
+                                      }) {
+                                          Text("Inject FF Thường")
+                                              .bold()
+                                              .frame(maxWidth: .infinity)
+                                              .padding(10)
+                                              .background(Color.red)
+                                              .foregroundColor(.white)
+                                              .cornerRadius(10)
+                                      }
+                                  }
+                                  
+                                  HStack(spacing: 12) {
+                                      Button(action: {
+                                          alertMessage = "Đang khởi chạy Free Fire Max..."
+                                          showAlert = true
+                                      }) {
+                                          Label("Vào FF Max", systemImage: "play.fill")
+                                              .bold()
+                                              .frame(maxWidth: .infinity)
+                                              .padding(10)
+                                              .background(Color.blue)
+                                              .foregroundColor(.white)
+                                              .cornerRadius(10)
+                                      }
+                                      
+                                      Button(action: {
+                                          alertMessage = "Đang khởi chạy Free Fire Thường..."
+                                          showAlert = true
+                                      }) {
+                                          Label("Vào FF Thường", systemImage: "play.circle.fill")
+                                              .bold()
+                                              .frame(maxWidth: .infinity)
+                                              .padding(10)
+                                              .background(Color.purple)
+                                              .foregroundColor(.white)
+                                              .cornerRadius(10)
+                                      }
+                                  }
+                                  
+                                  Toggle("⚡ Fix Lag", isOn: $isFixLagEnabled)
+                                  Toggle("🚀 Fix Siêu Lag (Max FPS)", isOn: $isFixSuperLagEnabled)
+                                  Toggle("🎯 Nhẹ Tâm (Ổn định tâm)", isOn: $isNheTamEnabled)
+                              }
+                              
+                              Section(header: Text("Quản lý Chứng chỉ").foregroundColor(.white)) {
+                                  HStack {
+                                      Text("Trạng thái:")
+                                      Spacer()
+                                      Text(certStatus).foregroundColor(.gray)
+                                  }
+                                  Button("Nhập Chứng Chỉ (.p12 / .mobileprovision)") {
+                                      alertMessage = "Tính năng nhập chứng chỉ đã sẵn sàng."
+                                      showAlert = true
+                                  }
+                              }
+                              
+                              Section(header: Text("Quản lý & Nhập File IPA").foregroundColor(.white)) {
+                                  ForEach(importedFiles, id: \.self) { file in
+                                      HStack {
+                                          Image(systemName: "cube.box")
+                                          Text(file)
+                                          Spacer()
+                                          Button("Cài đặt") {
+                                              alertMessage = "Đang xử lý cài đặt \(file)..."
+                                              showAlert = true
+                                          }
+                                      }
+                                  }
+                                  Button("Thêm / Nhập File IPA mới") {
+                                      let newFile = "app_moi_\(importedFiles.count + 1).ipa"
+                                      importedFiles.append(newFile)
+                                  }
+                              }
+                              
+                              Section(header: Text("Thư viện & Cài đặt").foregroundColor(.white)) {
+                                  NavigationLink(destination: SettingsDetailView()) {
+                                      HStack {
+                                          Image(systemName: "gear")
+                                          Text("Cài đặt ứng dụng & Tùy chọn")
+                                      }
+                                  }
+                              }
+                          }
+                          .scrollContentBackground(.hidden)
+                      }
+                      .navigationTitle("bindepzai123 - Gaming Hub")
+                      .navigationBarTitleDisplayMode(.inline)
+                  }
+                  .alert(isPresented: $showAlert) {
+                      Alert(title: Text("Thông báo"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                  }
+              }
+          }
+
+          struct SettingsDetailView: View {
+              var body: some View {
+                  Form {
+                      Section(header: Text("Tùy chọn nâng cao")) {
+                          Toggle("Bật chế độ Debug", isOn: .constant(false))
+                          Toggle("Tự động xóa Cache sau khi cài", isOn: .constant(true))
+                      }
+                      Section(header: Text("Thông tin hệ thống")) {
+                          Text("Ứng dụng quản lý IPA và tích hợp Menu Free Fire đỉnh cao.")
                       }
                   }
+                  .navigationTitle("Cài đặt")
               }
           }
 
