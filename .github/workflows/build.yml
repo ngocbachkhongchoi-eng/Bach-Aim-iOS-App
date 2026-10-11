@@ -11,122 +11,120 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create iOS App
+      - name: Compile Native iOS Binary & Package IPA
         run: |
           mkdir -p AppSource
-          cat << 'EOF' > AppSource/main.swift
-          import UIKit
+          cat << 'EOF' > AppSource/main.m
+          #import <UIKit/UIKit.h>
 
-          class ViewController: UIViewController {
-              override func viewDidLoad() {
-                  super.viewDidLoad()
-                  view.backgroundColor = .systemRed
-                  
-                  let titleLabel = UILabel()
-                  titleLabel.text = "bindepzai123"
-                  titleLabel.font = UIFont.boldSystemFont(ofSize: 32)
-                  titleLabel.textColor = .white
-                  titleLabel.textAlignment = .center
-                  titleLabel.translatesAutoresizingMaskIntoConstraints = false
-                  
-                  let keyField = UITextField()
-                  keyField.placeholder = "Nhập Key..."
-                  keyField.isSecureTextEntry = true
-                  keyField.borderStyle = .roundedRect
-                  keyField.font = UIFont.systemFont(ofSize: 18)
-                  keyField.translatesAutoresizingMaskIntoConstraints = false
-                  
-                  let loginBtn = UIButton(type: .system)
-                  loginBtn.setTitle("ĐĂNG NHẬP", for: .normal)
-                  loginBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
-                  loginBtn.backgroundColor = .systemOrange
-                  loginBtn.setTitleColor(.white, for: .normal)
-                  loginBtn.layer.cornerRadius = 10
-                  loginBtn.translatesAutoresizingMaskIntoConstraints = false
-                  loginBtn.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
-                  
-                  let stackView = UIStackView(arrangedSubviews: [titleLabel, keyField, loginBtn])
-                  stackView.axis = .vertical
-                  stackView.spacing = 20
-                  stackView.translatesAutoresizingMaskIntoConstraints = false
-                  
-                  view.addSubview(stackView)
-                  
-                  NSLayoutConstraint.activate([
-                      keyField.heightAnchor.constraint(equalToConstant: 50),
-                      loginBtn.heightAnchor.constraint(equalToConstant: 50),
-                      stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-                      stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-                      stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-                  ])
-              }
+          @interface MainViewController : UIViewController
+          @end
+
+          @implementation MainViewController
+          - (void)viewDidLoad {
+              [super viewDidLoad];
+              self.view.backgroundColor = [UIColor systemBlueColor];
               
-              @objc func handleLogin() {
-                  let mainVC = MainViewController()
-                  mainVC.modalPresentationStyle = .fullScreen
-                  present(mainVC, animated: true, completion: nil)
+              UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 80, self.view.bounds.size.width - 40, 60)];
+              label.text = @"🔥 MENU FREE FIRE & IPA TOOLS 🔥";
+              label.font = [UIFont boldSystemFontOfSize:20];
+              label.textColor = [UIColor whiteColor];
+              label.textAlignment = NSTextAlignmentCenter;
+              [self.view addSubview:label];
+              
+              NSArray *btnTitles = @[@"Inject FF Max", @"Inject FF Thường", @"Vào FF Max", @"Vào FF Thường", @"⚡ Fix Lag / Siêu Lag / Nhẹ Tâm"];
+              NSArray *btnColors = @[[UIColor systemOrangeColor], [UIColor systemRedColor], [UIColor systemPurpleColor], [UIColor systemIndigoColor], [UIColor systemGreenColor]];
+              
+              for (int i = 0; i < btnTitles.count; i++) {
+                  UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+                  btn.frame = CGRectMake(30, 160 + (i * 60), self.view.bounds.size.width - 60, 48);
+                  [btn setTitle:btnTitles[i] forState:UIControlStateNormal];
+                  btn.titleLabel.font = [UIFont boldSystemFontOfSize:16];
+                  [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                  btn.backgroundColor = btnColors[i];
+                  btn.layer.cornerRadius = 12;
+                  [self.view addSubview:btn];
               }
           }
+          @end
 
-          class MainViewController: UIViewController {
-              override func viewDidLoad() {
-                  super.viewDidLoad()
-                  view.backgroundColor = .systemBlue
-                  
-                  let label = UILabel()
-                  label.text = "🔥 MENU FREE FIRE & IPA TOOLS 🔥"
-                  label.font = UIFont.boldSystemFont(ofSize: 22)
-                  label.textColor = .white
-                  label.textAlignment = .center
-                  label.numberOfLines = 0
-                  label.translatesAutoresizingMaskIntoConstraints = false
-                  
-                  let btn1 = createButton(title: "Inject FF Max", color: .systemOrange)
-                  let btn2 = createButton(title: "Inject FF Thường", color: .systemRed)
-                  let btn3 = createButton(title: "Vào FF Max", color: .systemPurple)
-                  let btn4 = createButton(title: "Vào FF Thường", color: .systemIndigo)
-                  let btn5 = createButton(title: "⚡ Fix Lag / Siêu Lag / Nhẹ Tâm", color: .systemGreen)
-                  
-                  let stack = UIStackView(arrangedSubviews: [label, btn1, btn2, btn3, btn4, btn5])
-                  stack.axis = .vertical
-                  stack.spacing = 15
-                  stack.translatesAutoresizingMaskIntoConstraints = false
-                  
-                  view.addSubview(stack)
-                  
-                  NSLayoutConstraint.activate([
-                      stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-                      stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-                      stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-                  ])
-              }
+          @interface LoginViewController : UIViewController <UITextFieldDelegate>
+          @property (nonatomic, strong) UITextField *keyField;
+          @property (nonatomic, strong) UILabel *errorLabel;
+          @end
+
+          @implementation LoginViewController
+          - (void)viewDidLoad {
+              [super viewDidLoad];
+              self.view.backgroundColor = [UIColor colorWithRed:0.8 green:0.1 blue:0.1 alpha:1.0];
               
-              func createButton(title: String, color: UIColor) -> UIButton {
-                  let btn = UIButton(type: .system)
-                  btn.setTitle(title, for: .normal)
-                  btn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-                  btn.backgroundColor = color
-                  btn.setTitleColor(.white, for: .normal)
-                  btn.layer.cornerRadius = 10
-                  btn.heightAnchor.constraint(equalToConstant: 45).isActive = true
-                  return btn
-              }
+              UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 150, self.view.bounds.size.width - 40, 50)];
+              titleLabel.text = @"BINDÉPZAI 123";
+              titleLabel.font = [UIFont boldSystemFontOfSize:32];
+              titleLabel.textColor = [UIColor whiteColor];
+              titleLabel.textAlignment = NSTextAlignmentCenter;
+              [self.view addSubview:titleLabel];
+              
+              self.keyField = [[UITextField alloc] initWithFrame:CGRectMake(40, 230, self.view.bounds.size.width - 80, 50)];
+              self.keyField.placeholder = @" Nhập Key Bản Quyền...";
+              self.keyField.secureTextEntry = YES;
+              self.keyField.backgroundColor = [UIColor whiteColor];
+              self.keyField.layer.cornerRadius = 12;
+              self.keyField.font = [UIFont systemFontOfSize:18];
+              [self.view addSubview:self.keyField];
+              
+              UIButton *loginBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+              loginBtn.frame = CGRectMake(40, 300, self.view.bounds.size.width - 80, 50);
+              [loginBtn setTitle:@"XÁC NHẬN ĐĂNG NHẬP" forState:UIControlStateNormal];
+              loginBtn.titleLabel.font = [UIFont boldSystemFontOfSize:18];
+              [loginBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+              loginBtn.backgroundColor = [UIColor systemOrangeColor];
+              loginBtn.layer.cornerRadius = 12;
+              [loginBtn addTarget:self action:@selector(handleLogin) forControlEvents:UIControlEventTouchUpInside];
+              [self.view addSubview:loginBtn];
+              
+              self.errorLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 370, self.view.bounds.size.width - 40, 30)];
+              self.errorLabel.text = @"⚠️ Key không chính xác!";
+              self.errorLabel.textColor = [UIColor yellowColor];
+              self.errorLabel.textAlignment = NSTextAlignmentCenter;
+              self.errorLabel.font = [UIFont boldSystemFontOfSize:16];
+              self.errorLabel.hidden = YES;
+              [self.view addSubview:self.errorLabel];
           }
 
-          @main
-          class AppDelegate: UIResponder, UIApplicationDelegate {
-              var window: UIWindow?
-              func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-                  window = UIWindow(frame: UIScreen.main.bounds)
-                  window?.rootViewController = ViewController()
-                  window?.makeKeyAndVisible()
-                  return true
+          - (void)handleLogin {
+              if ([self.keyField.text isEqualToString:@"bindepzai123"]) {
+                  MainViewController *mainVC = [[MainViewController alloc] init];
+                  mainVC.modalPresentationStyle = UIModalPresentationFullScreen;
+                  [self presentViewController:mainVC animated:YES completion:nil];
+              } else {
+                  self.errorLabel.hidden = NO;
+              }
+          }
+          @end
+
+          @interface AppDelegate : UIResponder <UIApplicationDelegate>
+          @property (strong, nonatomic) UIWindow *window;
+          @end
+
+          @implementation AppDelegate
+          - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+              self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+              self.window.rootViewController = [[LoginViewController alloc] init];
+              [self.window makeKeyAndVisible];
+              return YES;
+          }
+          @end
+
+          int main(int argc, char * argv[]) {
+              @autoreleasepool {
+                  return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
               }
           }
           EOF
 
           SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
-          swiftc -sdk $SDK_PATH -target arm64-apple-ios14.0 AppSource/main.swift -o bindepzai123
+          clang -isysroot $SDK_PATH -target arm64-apple-ios14.0 -framework UIKit -framework Foundation AppSource/main.m -o bindepzai123
 
           mkdir -p Payload/bindepzai123.app
           mv bindepzai123 Payload/bindepzai123.app/
