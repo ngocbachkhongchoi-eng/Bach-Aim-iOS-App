@@ -33,8 +33,15 @@ jobs:
                           
                           VStack(spacing: 30) {
                               VStack(spacing: 8) {
+                                  Image(systemName: "flame.fill")
+                                      .resizable()
+                                      .aspectRatio(contentMode: .fit)
+                                      .frame(width: 70, height: 70)
+                                      .foregroundColor(.purple)
+                                      .shadow(color: .purple, radius: 10)
+                                  
                                   Text("BINDÉPZAI 123")
-                                      .font(.system(size: 36, weight: .black, design: .rounded))
+                                      .font(.system(size: 34, weight: .black, design: .rounded))
                                       .foregroundColor(.white)
                                       .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 3)
                                   
@@ -46,10 +53,11 @@ jobs:
                               
                               VStack(spacing: 20) {
                                   SecureField("Nhập Key Bản Quyền...", text: $keyInput)
-                                      .padding()
-                                      .background(Color.white.opacity(0.95))
+                                      .padding(.vertical, 16)
+                                      .padding(.horizontal, 16)
+                                      .background(Color.white)
                                       .cornerRadius(14)
-                                      .font(.headline)
+                                      .font(.system(size: 18, weight: .bold))
                                       .foregroundColor(.black)
                                       .autocapitalization(.none)
                                       .shadow(radius: 3)
@@ -62,11 +70,10 @@ jobs:
                                       }
                                   }) {
                                       Text("XÁC NHẬN ĐĂNG NHẬP")
-                                          .font(.headline)
-                                          .bold()
+                                          .font(.system(size: 18, weight: .bold))
                                           .foregroundColor(.white)
                                           .frame(maxWidth: .infinity)
-                                          .padding()
+                                          .padding(.vertical, 16)
                                           .background(LinearGradient(gradient: Gradient(colors: [Color.orange, Color.red]), startPoint: .leading, endPoint: .trailing))
                                           .cornerRadius(14)
                                           .shadow(color: .black.opacity(0.4), radius: 5, x: 0, y: 3)
@@ -95,17 +102,19 @@ jobs:
               @State private var showAlert = false
               @State private var alertMessage = ""
               
-              // FF Menu States
               @State private var isFixLagEnabled = false
               @State private var isFixSuperLagEnabled = false
               @State private var isNheTamEnabled = false
+
+              init() {
+                  UITableView.appearance().backgroundColor = .clear
+              }
 
               var body: some View {
                   NavigationView {
                       ZStack {
                           Color.blue.edgesIgnoringSafeArea(.all)
                           List {
-                              // MENU FREE FIRE
                               Section(header: Text("🔥 MENU FREE FIRE (MAX & THƯỜNG)").foregroundColor(.white).bold()) {
                                   HStack(spacing: 12) {
                                       Button(action: {
@@ -115,7 +124,7 @@ jobs:
                                           Text("Inject FF Max")
                                               .bold()
                                               .frame(maxWidth: .infinity)
-                                              .padding(10)
+                                              .padding(12)
                                               .background(Color.orange)
                                               .foregroundColor(.white)
                                               .cornerRadius(10)
@@ -128,7 +137,7 @@ jobs:
                                           Text("Inject FF Thường")
                                               .bold()
                                               .frame(maxWidth: .infinity)
-                                              .padding(10)
+                                              .padding(12)
                                               .background(Color.red)
                                               .foregroundColor(.white)
                                               .cornerRadius(10)
@@ -143,8 +152,8 @@ jobs:
                                           Label("Vào FF Max", systemImage: "play.fill")
                                               .bold()
                                               .frame(maxWidth: .infinity)
-                                              .padding(10)
-                                              .background(Color.blue)
+                                              .padding(12)
+                                              .background(Color.purple)
                                               .foregroundColor(.white)
                                               .cornerRadius(10)
                                       }
@@ -156,8 +165,8 @@ jobs:
                                           Label("Vào FF Thường", systemImage: "play.circle.fill")
                                               .bold()
                                               .frame(maxWidth: .infinity)
-                                              .padding(10)
-                                              .background(Color.purple)
+                                              .padding(12)
+                                              .background(Color.indigo)
                                               .foregroundColor(.white)
                                               .cornerRadius(10)
                                       }
@@ -197,17 +206,7 @@ jobs:
                                       importedFiles.append(newFile)
                                   }
                               }
-                              
-                              Section(header: Text("Thư viện & Cài đặt").foregroundColor(.white)) {
-                                  NavigationLink(destination: SettingsDetailView()) {
-                                      HStack {
-                                          Image(systemName: "gear")
-                                          Text("Cài đặt ứng dụng & Tùy chọn")
-                                      }
-                                  }
-                              }
                           }
-                          .scrollContentBackground(.hidden)
                       }
                       .navigationTitle("bindepzai123 - Gaming Hub")
                       .navigationBarTitleDisplayMode(.inline)
@@ -215,21 +214,6 @@ jobs:
                   .alert(isPresented: $showAlert) {
                       Alert(title: Text("Thông báo"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                   }
-              }
-          }
-
-          struct SettingsDetailView: View {
-              var body: some View {
-                  Form {
-                      Section(header: Text("Tùy chọn nâng cao")) {
-                          Toggle("Bật chế độ Debug", isOn: .constant(false))
-                          Toggle("Tự động xóa Cache sau khi cài", isOn: .constant(true))
-                      }
-                      Section(header: Text("Thông tin hệ thống")) {
-                          Text("Ứng dụng quản lý IPA và tích hợp Menu Free Fire đỉnh cao.")
-                      }
-                  }
-                  .navigationTitle("Cài đặt")
               }
           }
 
@@ -258,6 +242,11 @@ jobs:
           mkdir -p Payload/bindepzai123.app
           mv bindepzai123 Payload/bindepzai123.app/
           
+          # Tải icon nếu người dùng đã upload, hoặc sử dụng icon mặc định
+          if [ -f "AppIcon.png" ]; then
+              cp AppIcon.png Payload/bindepzai123.app/AppIcon60x60@2x.png
+          fi
+
           cat << 'EOF' > Payload/bindepzai123.app/Info.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -275,6 +264,16 @@ jobs:
               <string>1.0</string>
               <key>CFBundleVersion</key>
               <string>1</string>
+              <key>CFBundleIcons</key>
+              <dict>
+                  <key>CFBundlePrimaryIcon</key>
+                  <dict>
+                      <key>CFBundleIconFiles</key>
+                      <array>
+                          <string>AppIcon60x60</string>
+                      </array>
+                  </dict>
+              </dict>
               <key>LSRequiresIPhoneOS</key>
               <true/>
               <key>MinimumOSVersion</key>
