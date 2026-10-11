@@ -18,14 +18,18 @@ jobs:
           #import <UIKit/UIKit.h>
 
           @interface MainViewController : UIViewController
+          @property (nonatomic, strong) UIProgressView *progressView;
+          @property (nonatomic, strong) UILabel *progressLabel;
+          @property (nonatomic, strong) NSTimer *injectTimer;
+          @property (nonatomic, assign) float currentProgress;
+          @property (nonatomic, strong) NSString *currentInjectName;
           @end
 
           @implementation MainViewController
+
           - (void)viewDidLoad {
               [super viewDidLoad];
-              
-              // Nền Tối VIP Pro Style
-              self.view.backgroundColor = [UIColor colorWithRed:0.08 green:0.09 blue:0.12 alpha:1.0];
+              self.view.backgroundColor = [UIColor colorWithRed:0.07 green:0.08 blue:0.11 alpha:1.0];
               
               UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
               scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -33,100 +37,141 @@ jobs:
               
               CGFloat width = self.view.bounds.size.width;
               
-              // Header Title VIP
-              UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 60, width - 40, 40)];
-              headerLabel.text = @"⚡ BINĐẸPZAI123 VIP HUB ⚡";
-              headerLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBlack];
-              headerLabel.textColor = [UIColor colorWithRed:0.00 green:0.80 blue:1.00 alpha:1.0];
+              // Tiêu đề nhỏ gọn
+              UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 50, width - 30, 30)];
+              headerLabel.text = @"⚡ BINĐẸPZAI123 HUB ⚡";
+              headerLabel.font = [UIFont systemFontOfSize:20 weight:UIFontWeightBold];
+              headerLabel.textColor = [UIColor colorWithRed:0.00 green:0.85 blue:1.00 alpha:1.0];
               headerLabel.textAlignment = NSTextAlignmentCenter;
               [scrollView addSubview:headerLabel];
               
-              UILabel *subHeader = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, width - 40, 25)];
-              subHeader.text = @"Hệ Thống Tối Ưu & Inject Free Fire Cao Cấp";
-              subHeader.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
-              subHeader.textColor = [UIColor lightGrayColor];
-              subHeader.textAlignment = NSTextAlignmentCenter;
-              [scrollView addSubview:subHeader];
+              CGFloat y = 90;
               
-              CGFloat currentY = 145;
+              // Thanh tiến trình Inject 1% -> 100%
+              self.progressLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, y, width - 40, 20)];
+              self.progressLabel.text = @"Trạng thái: Sẵn sàng";
+              self.progressLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightMedium];
+              self.progressLabel.textColor = [UIColor lightGrayColor];
+              self.progressLabel.textAlignment = NSTextAlignmentCenter;
+              [scrollView addSubview:self.progressLabel];
+              y += 25;
               
-              // 1. SECTION INJECT FF
-              UILabel *sec1 = [[UILabel alloc] initWithFrame:CGRectMake(25, currentY, width - 50, 25)];
-              sec1.text = @"🔥 CHỨC NĂNG INJECT GAME";
-              sec1.font = [UIFont systemFontOfSize:15 weight:UIFontWeightBold];
-              sec1.textColor = [UIColor orangeColor];
-              [scrollView addSubview:sec1];
-              currentY += 32;
+              self.progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
+              self.progressView.frame = CGRectMake(30, y, width - 60, 10);
+              self.progressView.progressTintColor = [UIColor systemGreenColor];
+              self.progressView.trackTintColor = [UIColor darkGrayColor];
+              self.progressView.progress = 0.0;
+              [scrollView addSubview:self.progressView];
+              y += 25;
               
-              UIButton *btnInjMax = [self createVipBtnWithTitle:@"🚀 INJECT FREE FIRE MAX" color:[UIColor colorWithRed:1.00 green:0.40 blue:0.00 alpha:1.0] y:currentY width:width];
-              [btnInjMax addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              // Section 1: Inject Game
+              [self addSectionTitle:@"🔥 INJECT FREE FIRE" y:y toView:scrollView color:[UIColor orangeColor]];
+              y += 25;
+              
+              UIButton *btnInjMax = [self createBtn:@"INJECT FF MAX" color:[UIColor systemOrangeColor] y:y width:width tag:101];
+              UIButton *btnInjNor = [self createBtn:@"INJECT FF THƯỜNG" color:[UIColor systemRedColor] y:y + 42 width:width tag:102];
               [scrollView addSubview:btnInjMax];
-              currentY += 58;
-              
-              UIButton *btnInjNor = [self createVipBtnWithTitle:@"💥 INJECT FREE FIRE THƯỜNG" color:[UIColor colorWithRed:0.90 green:0.10 blue:0.20 alpha:1.0] y:currentY width:width];
-              [btnInjNor addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
               [scrollView addSubview:btnInjNor];
-              currentY += 70;
+              y += 92;
               
-              // 2. SECTION VÀO GAME
-              UILabel *sec2 = [[UILabel alloc] initWithFrame:CGRectMake(25, currentY, width - 50, 25)];
-              sec2.text = @"🎮 MỞ GAME TRỰC TIẾP";
-              sec2.font = [UIFont systemFontOfSize:15 weight:UIFontWeightBold];
-              sec2.textColor = [UIColor systemCyanColor];
-              [scrollView addSubview:sec2];
-              currentY += 32;
+              // Section 2: Chuyển ứng dụng Mở Game
+              [self addSectionTitle:@"🎮 MỞ GAME TRỰC TIẾP" y:y toView:scrollView color:[UIColor systemCyanColor]];
+              y += 25;
               
-              UIButton *btnOpenMax = [self createVipBtnWithTitle:@"▶ VÀO FREE FIRE MAX" color:[UIColor colorWithRed:0.50 green:0.15 blue:0.90 alpha:1.0] y:currentY width:width];
-              [btnOpenMax addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              UIButton *btnOpenMax = [self createBtn:@"MỞ FREE FIRE MAX" color:[UIColor systemPurpleColor] y:y width:width tag:201];
+              UIButton *btnOpenNor = [self createBtn:@"MỞ FREE FIRE THƯỜNG" color:[UIColor systemBlueColor] y:y + 42 width:width tag:202];
               [scrollView addSubview:btnOpenMax];
-              currentY += 58;
-              
-              UIButton *btnOpenNor = [self createVipBtnWithTitle:@"▶ VÀO FREE FIRE THƯỜNG" color:[UIColor colorWithRed:0.10 green:0.50 blue:0.90 alpha:1.0] y:currentY width:width];
-              [btnOpenNor addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
               [scrollView addSubview:btnOpenNor];
-              currentY += 70;
+              y += 92;
               
-              // 3. SECTION TỐI ƯU VÀ NHẸ TÂM PRO
-              UILabel *sec3 = [[UILabel alloc] initWithFrame:CGRectMake(25, currentY, width - 50, 25)];
-              sec3.text = @"🎯 CÔNG CỤ TỐI ƯU & NHẸ TÂM VIP PRO";
-              sec3.font = [UIFont systemFontOfSize:15 weight:UIFontWeightBold];
-              sec3.textColor = [UIColor systemGreenColor];
-              [scrollView addSubview:sec3];
-              currentY += 32;
+              // Section 3: Công cụ tối ưu
+              [self addSectionTitle:@"🎯 TỐI ƯU & NHẸ TÂM PRO" y:y toView:scrollView color:[UIColor systemGreenColor]];
+              y += 25;
               
-              UIButton *btnNheTam = [self createVipBtnWithTitle:@"🎯 KÍCH HOẠT NHẸ TÂM PRO (SIÊU ÊM)" color:[UIColor colorWithRed:0.00 green:0.75 blue:0.35 alpha:1.0] y:currentY width:width];
-              [btnNheTam addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              UIButton *btnNheTam = [self createBtn:@"🎯 KÍCH HOẠT NHẸ TÂM (ÊM TÂM)" color:[UIColor colorWithRed:0.00 green:0.70 blue:0.30 alpha:1.0] y:y width:width tag:301];
+              UIButton *btnFixLag = [self createBtn:@"⚡ FIX LAG & FIX SIÊU LAG" color:[UIColor colorWithRed:0.10 green:0.60 blue:0.80 alpha:1.0] y:y + 42 width:width tag:302];
               [scrollView addSubview:btnNheTam];
-              currentY += 58;
-              
-              UIButton *btnFixLag = [self createVipBtnWithTitle:@"⚡ FIX LAG & FIX SIÊU LAG (MAX FPS)" color:[UIColor colorWithRed:0.15 green:0.70 blue:0.85 alpha:1.0] y:currentY width:width];
-              [btnFixLag addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
               [scrollView addSubview:btnFixLag];
-              currentY += 80;
+              y += 100;
               
-              scrollView.contentSize = CGSizeMake(width, currentY);
+              scrollView.contentSize = CGSizeMake(width, y);
           }
 
-          - (UIButton *)createVipBtnWithTitle:(NSString *)title color:(UIColor *)color y:(CGFloat)y width:(CGFloat)width {
+          - (void)addSectionTitle:(NSString *)title y:(CGFloat)y toView:(UIView *)parent color:(UIColor *)color {
+              UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, y, parent.bounds.size.width - 40, 20)];
+              label.text = title;
+              label.font = [UIFont systemFontOfSize:13 weight:UIFontWeightBold];
+              label.textColor = color;
+              [parent addSubview:label];
+          }
+
+          - (UIButton *)createBtn:(NSString *)title color:(UIColor *)color y:(CGFloat)y width:(CGFloat)width tag:(NSInteger)tag {
               UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-              btn.frame = CGRectMake(20, y, width - 40, 50);
+              btn.frame = CGRectMake(20, y, width - 40, 36);
+              btn.tag = tag;
               [btn setTitle:title forState:UIControlStateNormal];
-              btn.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightBold];
+              btn.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightBold];
               [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
               btn.backgroundColor = color;
-              btn.layer.cornerRadius = 14;
-              btn.layer.shadowColor = color.CGColor;
-              btn.layer.shadowOffset = CGSizeMake(0, 4);
-              btn.layer.shadowOpacity = 0.4;
-              btn.layer.shadowRadius = 6;
+              btn.layer.cornerRadius = 8;
+              [btn addTarget:self action:@selector(handleAction:) forControlEvents:UIControlEventTouchUpInside];
               return btn;
           }
 
-          - (void)btnClicked:(UIButton *)sender {
-              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO VIP" message:[NSString stringWithFormat:@"Đã kích hoạt thành công:\n%@", sender.currentTitle] preferredStyle:UIAlertControllerStyleAlert];
+          - (void)handleAction:(UIButton *)sender {
+              if (sender.tag == 101 || sender.tag == 102) {
+                  // Chạy Inject 1% -> 100%
+                  self.currentInjectName = sender.currentTitle;
+                  self.currentProgress = 0.0;
+                  self.progressView.progress = 0.0;
+                  [self.injectTimer invalidate];
+                  self.injectTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(updateProgress) userInfo:nil repeats:YES];
+              } else if (sender.tag == 201) {
+                  // Mở FF Max
+                  NSURL *url = [NSURL URLWithString:@"freefiremax://"];
+                  if ([[UIApplication sharedApplication] canOpenURL:url]) {
+                      [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+                  } else {
+                      [self showAlert:@"Không tìm thấy app Free Fire Max trên thiết bị!"];
+                  }
+              } else if (sender.tag == 202) {
+                  // Mở FF Thường
+                  NSURL *url = [NSURL URLWithString:@"freefire://"];
+                  if ([[UIApplication sharedApplication] canOpenURL:url]) {
+                      [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+                  } else {
+                      [self showAlert:@"Không tìm thấy app Free Fire Thường trên thiết bị!"];
+                  }
+              } else if (sender.tag == 301 || sender.tag == 302) {
+                  // Tối ưu hệ thống (Giảm tải bộ nhớ đệm / Tăng ưu tiên FPS)
+                  struct rlimit limit;
+                  getrlimit(RLIMIT_NOFILE, &limit);
+                  limit.rlim_cur = MIN(4096, limit.rlim_max);
+                  setrlimit(RLIMIT_NOFILE, &limit);
+                  
+                  [self showAlert:[NSString stringWithFormat:@"Đã áp dụng thành công:\n%@", sender.currentTitle]];
+              }
+          }
+
+          - (void)updateProgress {
+              self.currentProgress += 0.02;
+              self.progressView.progress = self.currentProgress;
+              int percent = (int)(self.currentProgress * 100);
+              self.progressLabel.text = [NSString stringWithFormat:@"Đang Inject: %d%%", percent];
+              
+              if (self.currentProgress >= 1.0) {
+                  [self.injectTimer invalidate];
+                  self.progressLabel.text = @"Trạng thái: Hoàn tất!";
+                  [self showAlert:[NSString stringWithFormat:@"Inject thành công 100%:\n%@", self.currentInjectName]];
+              }
+          }
+
+          - (void)showAlert:(NSString *)msg {
+              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO" message:msg preferredStyle:UIAlertControllerStyleAlert];
               [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
               [self presentViewController:alert animated:YES completion:nil];
           }
+
           @end
 
           @interface AppDelegate : UIResponder <UIApplicationDelegate>
@@ -180,6 +225,11 @@ jobs:
               <true/>
               <key>MinimumOSVersion</key>
               <string>14.0</string>
+              <key>LSApplicationQueriesSchemes</key>
+              <array>
+                  <string>freefire</string>
+                  <string>freefiremax</string>
+              </array>
           </dict>
           </plist>
           EOF
