@@ -17,8 +17,9 @@ jobs:
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
           #import <CoreGraphics/CoreGraphics.h>
+          #import <sys/resource.h>
 
-          // --- TAB 1: TRANG CHỦ (INJECT & MỞ GAME FF THƯỜNG / MAX) ---
+          // --- TAB 1: TRANG CHỦ (INJECT & MỞ GAME) ---
           @interface HomeViewController : UIViewController
           @property (nonatomic, strong) UISegmentedControl *gameSelector;
           @property (nonatomic, strong) UIProgressView *progressView;
@@ -49,14 +50,14 @@ jobs:
               
               UILabel *lblBanner = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, banner.bounds.size.width - 30, 50)];
               lblBanner.text = @"⚡ DELTA CLIENT - FREE FIRE MAX & THƯỜNG";
-              lblBanner.font = [UIFont boldSystemFontOfSize:13];
+              lblBanner.font = [UIFont boldSystemFontOfSize:12];
               lblBanner.textColor = [UIColor systemCyanColor];
               lblBanner.textAlignment = NSTextAlignmentCenter;
               [banner addSubview:lblBanner];
               [scroll addSubview:banner];
               y += 65;
               
-              // Chuyển đổi giữa 2 Game
+              // Chọn Game
               self.gameSelector = [[UISegmentedControl alloc] initWithItems:@[@"Free Fire Thường", @"Free Fire Max"]];
               self.gameSelector.frame = CGRectMake(15, y, width - 30, 42);
               self.gameSelector.selectedSegmentIndex = 1;
@@ -65,7 +66,7 @@ jobs:
               [scroll addSubview:self.gameSelector];
               y += 55;
               
-              // Card Inject
+              // Card Quản Lý
               UIView *card = [[UIView alloc] initWithFrame:CGRectMake(15, y, width - 30, 220)];
               card.backgroundColor = [UIColor colorWithRed:0.12 green:0.14 blue:0.18 alpha:1.0];
               card.layer.cornerRadius = 16;
@@ -76,7 +77,6 @@ jobs:
               cardTitle.textColor = [UIColor systemOrangeColor];
               [card addSubview:cardTitle];
               
-              // Tiến trình
               self.progressLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 45, card.bounds.size.width - 30, 20)];
               self.progressLabel.text = @"Trạng thái: Sẵn sàng tiêm vào game";
               self.progressLabel.font = [UIFont systemFontOfSize:12];
@@ -89,7 +89,6 @@ jobs:
               self.progressView.trackTintColor = [UIColor darkGrayColor];
               [card addSubview:self.progressView];
               
-              // Nút Tiêm
               UIButton *btnInject = [UIButton buttonWithType:UIButtonTypeSystem];
               btnInject.frame = CGRectMake(15, 100, card.bounds.size.width - 30, 48);
               [btnInject setTitle:@"🚀 TIÊM VÀO FREE FIRE (INJECT)" forState:UIControlStateNormal];
@@ -100,7 +99,6 @@ jobs:
               [btnInject addTarget:self action:@selector(startInject) forControlEvents:UIControlEventTouchUpInside];
               [card addSubview:btnInject];
               
-              // Nút Mở Game
               UIButton *btnOpen = [UIButton buttonWithType:UIButtonTypeSystem];
               btnOpen.frame = CGRectMake(15, 160, card.bounds.size.width - 30, 48);
               [btnOpen setTitle:@"🎮 MỞ GAME NGAY LẬP TỨC" forState:UIControlStateNormal];
@@ -147,7 +145,7 @@ jobs:
               if ([[UIApplication sharedApplication] canOpenURL:url]) {
                   [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
               } else {
-                  UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"KHỞI CHẠY GAME" message:@"Đang mở ứng dụng Free Fire trực tiếp trên thiết bị của bạn." preferredStyle:UIAlertControllerStyleAlert];
+                  UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"KHỞI CHẠY GAME" message:@"Đang mở ứng dụng Free Fire trực tiếp trên thiết bị." preferredStyle:UIAlertControllerStyleAlert];
                   [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
                   [self presentViewController:alert animated:YES completion:nil];
               }
@@ -155,7 +153,7 @@ jobs:
           @end
 
 
-          // --- TAB 2: AIMHEAD & HEAD OFFSET ---
+          // --- TAB 2: AIMBOT & AIMHEAD ---
           @interface AimbotViewController : UIViewController
           @property (nonatomic, strong) UISwitch *aimHeadSwitch;
           @property (nonatomic, strong) UISlider *offsetSlider;
@@ -181,7 +179,6 @@ jobs:
               title.textColor = [UIColor systemPurpleColor];
               [card addSubview:title];
               
-              // Công tắc Aimhead
               UILabel *lblAimHead = [[UILabel alloc] initWithFrame:CGRectMake(15, 50, 180, 30)];
               lblAimHead.text = @"Kích hoạt Aimhead Pro";
               lblAimHead.font = [UIFont boldSystemFontOfSize:14];
@@ -193,7 +190,7 @@ jobs:
               [card addSubview:self.aimHeadSwitch];
               
               UILabel *desc = [[UILabel alloc] initWithFrame:CGRectMake(15, 90, card.bounds.size.width - 30, 35)];
-              desc.text = @"Khóa tâm tự động vào vùng xương đầu (bone_Head) kết hợp tinh chỉnh Offset độ cao.";
+              desc.text = @"Khóa tâm tự động vào cấu trúc xương đầu (bone_Head)[cite: 14] kết hợp tinh chỉnh Offset độ cao.";
               desc.font = [UIFont systemFontOfSize:11];
               desc.textColor = [UIColor lightGrayColor];
               desc.numberOfLines = 2;
