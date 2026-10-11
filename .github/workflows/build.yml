@@ -11,229 +11,118 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create iOS Swift App with Pro UI & FF Menu
+      - name: Create iOS App
         run: |
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.swift
           import UIKit
-          import SwiftUI
 
-          struct LoginView: View {
-              @State private var keyInput = ""
-              @State private var isLoggedIn = false
-              @State private var showError = false
-
-              var body: some View {
-                  if isLoggedIn {
-                      MainView()
-                  } else {
-                      ZStack {
-                          LinearGradient(gradient: Gradient(colors: [Color(red: 0.8, green: 0.1, blue: 0.1), Color(red: 0.4, green: 0.0, blue: 0.0)]), startPoint: .top, endPoint: .bottom)
-                              .edgesIgnoringSafeArea(.all)
-                          
-                          VStack(spacing: 30) {
-                              VStack(spacing: 8) {
-                                  Image(systemName: "flame.fill")
-                                      .resizable()
-                                      .aspectRatio(contentMode: .fit)
-                                      .frame(width: 70, height: 70)
-                                      .foregroundColor(.purple)
-                                      .shadow(color: .purple, radius: 10)
-                                  
-                                  Text("BINDÉPZAI 123")
-                                      .font(.system(size: 34, weight: .black, design: .rounded))
-                                      .foregroundColor(.white)
-                                      .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 3)
-                                  
-                                  Text("VIP GAMING & IPA HUB")
-                                      .font(.subheadline)
-                                      .bold()
-                                      .foregroundColor(.white.opacity(0.8))
-                              }
-                              
-                              VStack(spacing: 20) {
-                                  SecureField("Nhập Key Bản Quyền...", text: $keyInput)
-                                      .padding(.vertical, 16)
-                                      .padding(.horizontal, 16)
-                                      .background(Color.white)
-                                      .cornerRadius(14)
-                                      .font(.system(size: 18, weight: .bold))
-                                      .foregroundColor(.black)
-                                      .autocapitalization(.none)
-                                      .shadow(radius: 3)
-                                  
-                                  Button(action: {
-                                      if keyInput == "bindepzai123" {
-                                          isLoggedIn = true
-                                      } else {
-                                          showError = true
-                                      }
-                                  }) {
-                                      Text("XÁC NHẬN ĐĂNG NHẬP")
-                                          .font(.system(size: 18, weight: .bold))
-                                          .foregroundColor(.white)
-                                          .frame(maxWidth: .infinity)
-                                          .padding(.vertical, 16)
-                                          .background(LinearGradient(gradient: Gradient(colors: [Color.orange, Color.red]), startPoint: .leading, endPoint: .trailing))
-                                          .cornerRadius(14)
-                                          .shadow(color: .black.opacity(0.4), radius: 5, x: 0, y: 3)
-                                  }
-                                  
-                                  if showError {
-                                      Text("⚠️ Key không chính xác, thử lại nhé!")
-                                          .font(.subheadline)
-                                          .bold()
-                                          .foregroundColor(.yellow)
-                                  }
-                              }
-                              .padding(25)
-                              .background(Color.black.opacity(0.4))
-                              .cornerRadius(22)
-                              .padding(.horizontal, 20)
-                          }
-                      }
-                  }
+          class ViewController: UIViewController {
+              override func viewDidLoad() {
+                  super.viewDidLoad()
+                  view.backgroundColor = .systemRed
+                  
+                  let titleLabel = UILabel()
+                  titleLabel.text = "bindepzai123"
+                  titleLabel.font = UIFont.boldSystemFont(ofSize: 32)
+                  titleLabel.textColor = .white
+                  titleLabel.textAlignment = .center
+                  titleLabel.translatesAutoresizingMaskIntoConstraints = false
+                  
+                  let keyField = UITextField()
+                  keyField.placeholder = "Nhập Key..."
+                  keyField.isSecureTextEntry = true
+                  keyField.borderStyle = .roundedRect
+                  keyField.font = UIFont.systemFont(ofSize: 18)
+                  keyField.translatesAutoresizingMaskIntoConstraints = false
+                  
+                  let loginBtn = UIButton(type: .system)
+                  loginBtn.setTitle("ĐĂNG NHẬP", for: .normal)
+                  loginBtn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+                  loginBtn.backgroundColor = .systemOrange
+                  loginBtn.setTitleColor(.white, for: .normal)
+                  loginBtn.layer.cornerRadius = 10
+                  loginBtn.translatesAutoresizingMaskIntoConstraints = false
+                  loginBtn.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
+                  
+                  let stackView = UIStackView(arrangedSubviews: [titleLabel, keyField, loginBtn])
+                  stackView.axis = .vertical
+                  stackView.spacing = 20
+                  stackView.translatesAutoresizingMaskIntoConstraints = false
+                  
+                  view.addSubview(stackView)
+                  
+                  NSLayoutConstraint.activate([
+                      keyField.heightAnchor.constraint(equalToConstant: 50),
+                      loginBtn.heightAnchor.constraint(equalToConstant: 50),
+                      stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+                      stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+                      stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+                  ])
               }
-          }
-
-          struct MainView: View {
-              @State private var importedFiles: [String] = ["bindepzai123_v1.ipa"]
-              @State private var certStatus = "Chưa có chứng chỉ"
-              @State private var showAlert = false
-              @State private var alertMessage = ""
               
-              @State private var isFixLagEnabled = false
-              @State private var isFixSuperLagEnabled = false
-              @State private var isNheTamEnabled = false
-
-              init() {
-                  UITableView.appearance().backgroundColor = .clear
-              }
-
-              var body: some View {
-                  NavigationView {
-                      ZStack {
-                          Color.blue.edgesIgnoringSafeArea(.all)
-                          List {
-                              Section(header: Text("🔥 MENU FREE FIRE (MAX & THƯỜNG)").foregroundColor(.white).bold()) {
-                                  HStack(spacing: 12) {
-                                      Button(action: {
-                                          alertMessage = "Đã Inject thành công FF Max!"
-                                          showAlert = true
-                                      }) {
-                                          Text("Inject FF Max")
-                                              .bold()
-                                              .frame(maxWidth: .infinity)
-                                              .padding(12)
-                                              .background(Color.orange)
-                                              .foregroundColor(.white)
-                                              .cornerRadius(10)
-                                      }
-                                      
-                                      Button(action: {
-                                          alertMessage = "Đã Inject thành công FF Thường!"
-                                          showAlert = true
-                                      }) {
-                                          Text("Inject FF Thường")
-                                              .bold()
-                                              .frame(maxWidth: .infinity)
-                                              .padding(12)
-                                              .background(Color.red)
-                                              .foregroundColor(.white)
-                                              .cornerRadius(10)
-                                      }
-                                  }
-                                  
-                                  HStack(spacing: 12) {
-                                      Button(action: {
-                                          alertMessage = "Đang khởi chạy Free Fire Max..."
-                                          showAlert = true
-                                      }) {
-                                          Label("Vào FF Max", systemImage: "play.fill")
-                                              .bold()
-                                              .frame(maxWidth: .infinity)
-                                              .padding(12)
-                                              .background(Color.purple)
-                                              .foregroundColor(.white)
-                                              .cornerRadius(10)
-                                      }
-                                      
-                                      Button(action: {
-                                          alertMessage = "Đang khởi chạy Free Fire Thường..."
-                                          showAlert = true
-                                      }) {
-                                          Label("Vào FF Thường", systemImage: "play.circle.fill")
-                                              .bold()
-                                              .frame(maxWidth: .infinity)
-                                              .padding(12)
-                                              .background(Color.indigo)
-                                              .foregroundColor(.white)
-                                              .cornerRadius(10)
-                                      }
-                                  }
-                                  
-                                  Toggle("⚡ Fix Lag", isOn: $isFixLagEnabled)
-                                  Toggle("🚀 Fix Siêu Lag (Max FPS)", isOn: $isFixSuperLagEnabled)
-                                  Toggle("🎯 Nhẹ Tâm (Ổn định tâm)", isOn: $isNheTamEnabled)
-                              }
-                              
-                              Section(header: Text("Quản lý Chứng chỉ").foregroundColor(.white)) {
-                                  HStack {
-                                      Text("Trạng thái:")
-                                      Spacer()
-                                      Text(certStatus).foregroundColor(.gray)
-                                  }
-                                  Button("Nhập Chứng Chỉ (.p12 / .mobileprovision)") {
-                                      alertMessage = "Tính năng nhập chứng chỉ đã sẵn sàng."
-                                      showAlert = true
-                                  }
-                              }
-                              
-                              Section(header: Text("Quản lý & Nhập File IPA").foregroundColor(.white)) {
-                                  ForEach(importedFiles, id: \.self) { file in
-                                      HStack {
-                                          Image(systemName: "cube.box")
-                                          Text(file)
-                                          Spacer()
-                                          Button("Cài đặt") {
-                                              alertMessage = "Đang xử lý cài đặt \(file)..."
-                                              showAlert = true
-                                          }
-                                      }
-                                  }
-                                  Button("Thêm / Nhập File IPA mới") {
-                                      let newFile = "app_moi_\(importedFiles.count + 1).ipa"
-                                      importedFiles.append(newFile)
-                                  }
-                              }
-                          }
-                      }
-                      .navigationTitle("bindepzai123 - Gaming Hub")
-                      .navigationBarTitleDisplayMode(.inline)
-                  }
-                  .alert(isPresented: $showAlert) {
-                      Alert(title: Text("Thông báo"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-                  }
+              @objc func handleLogin() {
+                  let mainVC = MainViewController()
+                  mainVC.modalPresentationStyle = .fullScreen
+                  present(mainVC, animated: true, completion: nil)
               }
           }
 
+          class MainViewController: UIViewController {
+              override func viewDidLoad() {
+                  super.viewDidLoad()
+                  view.backgroundColor = .systemBlue
+                  
+                  let label = UILabel()
+                  label.text = "🔥 MENU FREE FIRE & IPA TOOLS 🔥"
+                  label.font = UIFont.boldSystemFont(ofSize: 22)
+                  label.textColor = .white
+                  label.textAlignment = .center
+                  label.numberOfLines = 0
+                  label.translatesAutoresizingMaskIntoConstraints = false
+                  
+                  let btn1 = createButton(title: "Inject FF Max", color: .systemOrange)
+                  let btn2 = createButton(title: "Inject FF Thường", color: .systemRed)
+                  let btn3 = createButton(title: "Vào FF Max", color: .systemPurple)
+                  let btn4 = createButton(title: "Vào FF Thường", color: .systemIndigo)
+                  let btn5 = createButton(title: "⚡ Fix Lag / Siêu Lag / Nhẹ Tâm", color: .systemGreen)
+                  
+                  let stack = UIStackView(arrangedSubviews: [label, btn1, btn2, btn3, btn4, btn5])
+                  stack.axis = .vertical
+                  stack.spacing = 15
+                  stack.translatesAutoresizingMaskIntoConstraints = false
+                  
+                  view.addSubview(stack)
+                  
+                  NSLayoutConstraint.activate([
+                      stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+                      stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+                      stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+                  ])
+              }
+              
+              func createButton(title: String, color: UIColor) -> UIButton {
+                  let btn = UIButton(type: .system)
+                  btn.setTitle(title, for: .normal)
+                  btn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+                  btn.backgroundColor = color
+                  btn.setTitleColor(.white, for: .normal)
+                  btn.layer.cornerRadius = 10
+                  btn.heightAnchor.constraint(equalToConstant: 45).isActive = true
+                  return btn
+              }
+          }
+
+          @main
           class AppDelegate: UIResponder, UIApplicationDelegate {
               var window: UIWindow?
               func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-                  let window = UIWindow(frame: UIScreen.main.bounds)
-                  window.rootViewController = UIHostingController(rootView: LoginView())
-                  self.window = window
-                  window.makeKeyAndVisible()
+                  window = UIWindow(frame: UIScreen.main.bounds)
+                  window?.rootViewController = ViewController()
+                  window?.makeKeyAndVisible()
                   return true
               }
           }
-
-          UIApplicationMain(
-              CommandLine.argc,
-              CommandLine.unsafeArgv,
-              nil,
-              NSStringFromClass(AppDelegate.self)
-          )
           EOF
 
           SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
@@ -242,7 +131,6 @@ jobs:
           mkdir -p Payload/bindepzai123.app
           mv bindepzai123 Payload/bindepzai123.app/
           
-          # Tải icon nếu người dùng đã upload, hoặc sử dụng icon mặc định
           if [ -f "AppIcon.png" ]; then
               cp AppIcon.png Payload/bindepzai123.app/AppIcon60x60@2x.png
           fi
@@ -264,16 +152,6 @@ jobs:
               <string>1.0</string>
               <key>CFBundleVersion</key>
               <string>1</string>
-              <key>CFBundleIcons</key>
-              <dict>
-                  <key>CFBundlePrimaryIcon</key>
-                  <dict>
-                      <key>CFBundleIconFiles</key>
-                      <array>
-                          <string>AppIcon60x60</string>
-                      </array>
-                  </dict>
-              </dict>
               <key>LSRequiresIPhoneOS</key>
               <true/>
               <key>MinimumOSVersion</key>
