@@ -11,9 +11,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Xcode and Compile
+      - name: Setup and Compile for iOS Simulator
         run: |
-          # Đảm bảo chọn đúng phiên bản Xcode trên runner
+          set -e
           sudo xcode-select -s /Applications/Xcode.app
           
           mkdir -p AppSource
@@ -283,9 +283,11 @@ jobs:
           </plist>
           EOF
 
-          # Trỏ đúng SDK path và cấu hình cờ biên dịch để tránh lỗi Exit Code 1
-          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
-          xcrun --sdk iphoneos clang -target arm64-apple-ios14.0 -isysroot "$SDK_PATH" -fobjc-arc -framework UIKit -framework Foundation -framework CoreGraphics AppSource/main.m -o "Payload/3105 binvippro.app/3105_binvippro"
+          # Biên dịch bằng SDK iphonesimulator để tránh lỗi thiếu chứng chỉ ký thiết bị
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "Using Simulator SDK at: $SDK_PATH"
+          
+          xcrun --sdk iphonesimulator clang -target arm64-apple-ios14.0-simulator -isysroot "$SDK_PATH" -fobjc-arc -framework UIKit -framework Foundation -framework CoreGraphics AppSource/main.m -o "Payload/3105 binvippro.app/3105_binvippro"
 
           zip -r 3105_binvippro.ipa Payload
           echo "Build IPA 3105 binvippro thành công!"
