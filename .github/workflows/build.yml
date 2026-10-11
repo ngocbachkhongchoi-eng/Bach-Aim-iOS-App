@@ -11,11 +11,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Compile and Package IPA
+      - name: Prepare Source Code
         run: |
-          set -e
-          
-          # Tạo thư mục và mã nguồn Objective-C tích hợp đầy đủ tính năng
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -201,113 +198,4 @@ jobs:
               yPos += 150;
               
               UIButton *dnsBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-              dnsBtn.frame = CGRectMake(0, yPos, 290, 40);
-              [dnsBtn setTitle:@"🛡️ Tải Cấu Hình DNS Antiban" forState:UIControlStateNormal];
-              [dnsBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-              dnsBtn.backgroundColor = [UIColor colorWithRed:0.15 green:0.5 blue:0.2 alpha:1.0];
-              dnsBtn.layer.cornerRadius = 8;
-              [dnsBtn addTarget:self action:@selector(installAntibanDNS) forControlEvents:UIControlEventTouchUpInside];
-              [view addSubview:dnsBtn];
-              yPos += 45;
-              
-              statusAntibanLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yPos, 290, 25)];
-              statusAntibanLabel.text = isAntibanInstalled ? @"Trạng thái: Đã cài đặt antiban" : @"Trạng thái: Chưa cài đặt antiban";
-              statusAntibanLabel.textColor = isAntibanInstalled ? [UIColor greenColor] : [UIColor orangeColor];
-              statusAntibanLabel.font = [UIFont boldSystemFontOfSize:12];
-              statusAntibanLabel.textAlignment = NSTextAlignmentCenter;
-              [view addSubview:statusAntibanLabel];
-          }
-
-          - (void)injectFFNormal {
-              NSLog(@"[3105 binvippro] Đã Inject thành công vào Free Fire thường!");
-          }
-
-          - (void)injectFFMax {
-              NSLog(@"[3105 binvippro] Đã Inject thành công vào Free Fire Max!");
-          }
-
-          - (void)openFFNormal {
-              NSURL *url = [NSURL URLWithString:@"com.dts.freefireth://"];
-              [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-          }
-
-          - (void)openFFMax {
-              NSURL *url = [NSURL URLWithString:@"com.dts.freefiremax://"];
-              [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-          }
-
-          - (void)installAntibanDNS {
-              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                  isAntibanInstalled = YES;
-                  statusAntibanLabel.text = @"Trạng thái: Đã cài đặt antiban";
-                  statusAntibanLabel.textColor = [UIColor greenColor];
-                  NSLog(@"[3105 binvippro] Đã tự động tạo và cấu hình DNS Antiban thành công.");
-              });
-          }
-
-          - (void)hideMenu {
-              [overlayWindow removeFromSuperview];
-              overlayWindow = nil;
-          }
-
-          @end
-
-          int main(int argc, char * argv[]) {
-              @autoreleasepool {
-                  return UIApplicationMain(argc, argv, nil, nil);
-              }
-          }
-          EOF
-
-          # Tạo cấu trúc thư mục ứng dụng và tệp cấu hình Info.plist chuẩn
-          APP_NAME="3105 binvippro"
-          BUNDLE_DIR="Payload/${APP_NAME}.app"
-          mkdir -p "$BUNDLE_DIR"
-
-          cat << 'EOF' > "$BUNDLE_DIR/Info.plist"
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleIdentifier</key>
-              <string>com.3105.binvippro</string>
-              <key>CFBundleName</key>
-              <string>3105 binvippro</string>
-              <key>CFBundleDisplayName</key>
-              <string>3105 binvippro</string>
-              <key>CFBundleExecutable</key>
-              <string>3105_binvippro</string>
-              <key>CFBundleVersion</key>
-              <string>1.0</string>
-              <key>CFBundleShortVersionString</key>
-              <string>1.0</string>
-              <key>LSRequiresIPhoneOS</key>
-              <true/>
-          </dict>
-          </plist>
-          EOF
-
-          echo 'APPL???株' > "$BUNDLE_DIR/PkgInfo"
-
-          # Trỏ đến SDK iPhone Simulator để trình biên dịch hiểu và build thành công UIKit
-          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          echo "Using Simulator SDK: $SDK_PATH"
-
-          clang -target arm64-apple-ios14.0-simulator \
-                -isysroot "$SDK_PATH" \
-                -fobjc-arc \
-                -framework UIKit \
-                -framework Foundation \
-                -framework CoreGraphics \
-                AppSource/main.m \
-                -o "$BUNDLE_DIR/3105_binvippro"
-
-          # Đóng gói thành file IPA hoàn chỉnh
-          zip -r 3105_binvippro.ipa Payload
-          echo "=> ĐÃ BUILD THÀNH CÔNG IPA 3105 BINVIPPRO!"
-
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: 3105_binvippro
-          path: 3105_binvippro.ipa
+              dnsBtn.frame =
