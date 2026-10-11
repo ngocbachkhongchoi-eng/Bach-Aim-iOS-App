@@ -15,7 +15,7 @@ jobs:
         run: |
           set -e
           
-          # 1. Tạo mã nguồn giao diện Objective-C
+          # 1. Tạo mã nguồn giao diện Objective-C chuẩn
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -271,7 +271,7 @@ jobs:
           }
           EOF
 
-          # 2. Xây dựng cấu trúc thư mục không chứa khoảng trắng để tránh lỗi path
+          # 2. Xây dựng cấu trúc ứng dụng
           APP_DIR="Payload/BinVipPro.app"
           mkdir -p "$APP_DIR"
 
@@ -300,26 +300,27 @@ jobs:
 
           echo 'APPL???株' > "$APP_DIR/PkgInfo"
 
-          # 3. Biên dịch an toàn bằng Simulator SDK với cờ tối ưu
           SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
           echo "Using SDK: $SDK_PATH"
 
+          # 3. Biên dịch tích hợp -lobjc để liên kết Objective-C Runtime thành công
           xcrun --sdk iphonesimulator clang \
                 -arch arm64 \
                 -isysroot "$SDK_PATH" \
                 -fobjc-arc \
+                -lobjc \
                 -framework UIKit \
                 -framework Foundation \
                 -framework CoreGraphics \
+                -framework QuartzCore \
                 AppSource/main.m \
                 -o "$APP_DIR/BinVipProExec"
 
-          # 4. Ký mã nguồn ứng dụng giả lập để tránh lỗi bảo mật
           codesign --force --sign - "$APP_DIR" || true
 
-          # 5. Đóng gói tệp IPA
+          # 4. Đóng gói IPA
           zip -r 3105_binvippro.ipa Payload
-          echo "=> ĐÓNG GÓI IPA THÀNH CÔNG 100%!"
+          echo "=> BUILD THÀNH CÔNG VÀ XUẤT ARTIFACT HOÀN TẤT!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
