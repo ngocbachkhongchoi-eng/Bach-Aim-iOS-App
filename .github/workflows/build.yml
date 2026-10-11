@@ -11,11 +11,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create Project and Build IPA
+      - name: Compile and Package IPA
         run: |
           set -e
           
-          # 1. Tạo cấu hình mã nguồn Objective-C
+          # Tạo thư mục và mã nguồn Objective-C tích hợp đầy đủ tính năng
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -259,9 +259,12 @@ jobs:
           }
           EOF
 
-          # 2. Tạo tệp Info.plist
-          mkdir -p BuildDir/Payload/App.app
-          cat << 'EOF' > BuildDir/Payload/App.app/Info.plist
+          # Tạo cấu trúc thư mục ứng dụng và tệp cấu hình Info.plist chuẩn
+          APP_NAME="3105 binvippro"
+          BUNDLE_DIR="Payload/${APP_NAME}.app"
+          mkdir -p "$BUNDLE_DIR"
+
+          cat << 'EOF' > "$BUNDLE_DIR/Info.plist"
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -273,7 +276,7 @@ jobs:
               <key>CFBundleDisplayName</key>
               <string>3105 binvippro</string>
               <key>CFBundleExecutable</key>
-              <string>AppExecutable</string>
+              <string>3105_binvippro</string>
               <key>CFBundleVersion</key>
               <string>1.0</string>
               <key>CFBundleShortVersionString</key>
@@ -284,17 +287,23 @@ jobs:
           </plist>
           EOF
 
-          # 3. Biên dịch bằng clang tương thích hoàn toàn môi trường macOS Runner
-          clang -isysroot $(xcrun --sdk macosx --show-sdk-path) \
-                -framework UIKit -framework Foundation -framework CoreGraphics \
-                -Xlinker -undefined -Xlinker dynamic_lookup \
-                AppSource/main.m -o BuildDir/Payload/App.app/AppExecutable
+          echo 'APPL???株' > "$BUNDLE_DIR/PkgInfo"
 
-          # 4. Đóng gói thành tệp IPA hoàn chỉnh
-          cd BuildDir
-          zip -r ../3105_binvippro.ipa Payload
-          cd ..
-          
+          # Trỏ đến SDK iPhone Simulator để trình biên dịch hiểu và build thành công UIKit
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "Using Simulator SDK: $SDK_PATH"
+
+          clang -target arm64-apple-ios14.0-simulator \
+                -isysroot "$SDK_PATH" \
+                -fobjc-arc \
+                -framework UIKit \
+                -framework Foundation \
+                -framework CoreGraphics \
+                AppSource/main.m \
+                -o "$BUNDLE_DIR/3105_binvippro"
+
+          # Đóng gói thành file IPA hoàn chỉnh
+          zip -r 3105_binvippro.ipa Payload
           echo "=> ĐÃ BUILD THÀNH CÔNG IPA 3105 BINVIPPRO!"
 
       - name: Upload IPA Artifact
