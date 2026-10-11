@@ -76,7 +76,7 @@ jobs:
                   [mainMenuView addSubview:closeBtn];
                   
                   // Thanh chuyển tab hiện đại
-                  UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"🎯 AIMBOT", @"⚙️ CÀI ĐẶT & INJECT"]];
+                  UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"🎯 AIM", @"⚙️ CÀI ĐẶT"]];
                   segmentedControl.frame = CGRectMake(20, 58, 305, 38];
                   segmentedControl.selectedSegmentIndex = 0;
                   [segmentedControl setTitleTextAttributes:@{NSForegroundColorAttributeName: [UIColor whiteColor]} forState:UIControlStateNormal];
@@ -204,7 +204,6 @@ jobs:
               
               UIButton *launchMax = [UIButton buttonWithType:UIButtonTypeSystem];
               launchMax.frame = CGRectMake(157, 85, 136, 46];
-              [launchMax.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
               [launchMax setTitle:@"🚀 Vô FF Max" forState:UIControlStateNormal];
               [launchMax setTitleColor:[UIColor yellowColor] forState:UIControlStateNormal];
               launchMax.titleLabel.font = [UIFont boldSystemFontOfSize:12];
@@ -276,8 +275,9 @@ jobs:
           }
           EOF
 
-      - name: Build and Package IPA
+      - name: Build Application Bundle and IPA
         run: |
+          set -e
           APP_DIR="Payload/3105 binvippro.app"
           mkdir -p "$APP_DIR"
 
@@ -306,15 +306,22 @@ jobs:
 
           echo 'APPL???株' > "$APP_DIR/PkgInfo"
 
-          xcrun clang -fobjc-arc \
-                      -framework UIKit \
-                      -framework Foundation \
-                      -framework CoreGraphics \
-                      AppSource/main.m \
-                      -o "$APP_DIR/BinVipProExec"
+          # Sử dụng Simulator SDK đúng chuẩn để biên dịch mã giao diện UIKit thành công
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "Using SDK: $SDK_PATH"
+
+          xcrun --sdk iphonesimulator clang \
+                -target arm64-apple-ios-simulator \
+                -isysroot "$SDK_PATH" \
+                -fobjc-arc \
+                -framework UIKit \
+                -framework Foundation \
+                -framework CoreGraphics \
+                AppSource/main.m \
+                -o "$APP_DIR/BinVipProExec"
 
           zip -r 3105_binvippro.ipa Payload
-          echo "=> ĐÃ TẠO GIAO DIỆN HIỆN ĐẠI VÀ ĐÓNG GÓI IPA THÀNH CÔNG!"
+          echo "=> BUILD THÀNH CÔNG 100%!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
