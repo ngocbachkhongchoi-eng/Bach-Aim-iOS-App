@@ -23,83 +23,109 @@ jobs:
           @implementation MainViewController
           - (void)viewDidLoad {
               [super viewDidLoad];
-              self.view.backgroundColor = [UIColor systemBlueColor];
               
-              UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 80, self.view.bounds.size.width - 40, 60)];
-              label.text = @"🔥 MENU FREE FIRE & IPA TOOLS 🔥";
-              label.font = [UIFont boldSystemFontOfSize:20];
-              label.textColor = [UIColor whiteColor];
-              label.textAlignment = NSTextAlignmentCenter;
-              [self.view addSubview:label];
+              // Nền Tối VIP Pro Style
+              self.view.backgroundColor = [UIColor colorWithRed:0.08 green:0.09 blue:0.12 alpha:1.0];
               
-              NSArray *btnTitles = @[@"Inject FF Max", @"Inject FF Thường", @"Vào FF Max", @"Vào FF Thường", @"⚡ Fix Lag / Siêu Lag / Nhẹ Tâm"];
-              NSArray *btnColors = @[[UIColor systemOrangeColor], [UIColor systemRedColor], [UIColor systemPurpleColor], [UIColor systemIndigoColor], [UIColor systemGreenColor]];
+              UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+              scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+              [self.view addSubview:scrollView];
               
-              for (int i = 0; i < btnTitles.count; i++) {
-                  UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-                  btn.frame = CGRectMake(30, 160 + (i * 60), self.view.bounds.size.width - 60, 48);
-                  [btn setTitle:btnTitles[i] forState:UIControlStateNormal];
-                  btn.titleLabel.font = [UIFont boldSystemFontOfSize:16];
-                  [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-                  btn.backgroundColor = btnColors[i];
-                  btn.layer.cornerRadius = 12;
-                  [self.view addSubview:btn];
-              }
+              CGFloat width = self.view.bounds.size.width;
+              
+              // Header Title VIP
+              UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 60, width - 40, 40)];
+              headerLabel.text = @"⚡ BINĐẸPZAI123 VIP HUB ⚡";
+              headerLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBlack];
+              headerLabel.textColor = [UIColor colorWithRed:0.00 green:0.80 blue:1.00 alpha:1.0];
+              headerLabel.textAlignment = NSTextAlignmentCenter;
+              [scrollView addSubview:headerLabel];
+              
+              UILabel *subHeader = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, width - 40, 25)];
+              subHeader.text = @"Hệ Thống Tối Ưu & Inject Free Fire Cao Cấp";
+              subHeader.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+              subHeader.textColor = [UIColor lightGrayColor];
+              subHeader.textAlignment = NSTextAlignmentCenter;
+              [scrollView addSubview:subHeader];
+              
+              CGFloat currentY = 145;
+              
+              // 1. SECTION INJECT FF
+              UILabel *sec1 = [[UILabel alloc] initWithFrame:CGRectMake(25, currentY, width - 50, 25)];
+              sec1.text = @"🔥 CHỨC NĂNG INJECT GAME";
+              sec1.font = [UIFont systemFontOfSize:15 weight:UIFontWeightBold];
+              sec1.textColor = [UIColor orangeColor];
+              [scrollView addSubview:sec1];
+              currentY += 32;
+              
+              UIButton *btnInjMax = [self createVipBtnWithTitle:@"🚀 INJECT FREE FIRE MAX" color:[UIColor colorWithRed:1.00 green:0.40 blue:0.00 alpha:1.0] y:currentY width:width];
+              [btnInjMax addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              [scrollView addSubview:btnInjMax];
+              currentY += 58;
+              
+              UIButton *btnInjNor = [self createVipBtnWithTitle:@"💥 INJECT FREE FIRE THƯỜNG" color:[UIColor colorWithRed:0.90 green:0.10 blue:0.20 alpha:1.0] y:currentY width:width];
+              [btnInjNor addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              [scrollView addSubview:btnInjNor];
+              currentY += 70;
+              
+              // 2. SECTION VÀO GAME
+              UILabel *sec2 = [[UILabel alloc] initWithFrame:CGRectMake(25, currentY, width - 50, 25)];
+              sec2.text = @"🎮 MỞ GAME TRỰC TIẾP";
+              sec2.font = [UIFont systemFontOfSize:15 weight:UIFontWeightBold];
+              sec2.textColor = [UIColor systemCyanColor];
+              [scrollView addSubview:sec2];
+              currentY += 32;
+              
+              UIButton *btnOpenMax = [self createVipBtnWithTitle:@"▶ VÀO FREE FIRE MAX" color:[UIColor colorWithRed:0.50 green:0.15 blue:0.90 alpha:1.0] y:currentY width:width];
+              [btnOpenMax addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              [scrollView addSubview:btnOpenMax];
+              currentY += 58;
+              
+              UIButton *btnOpenNor = [self createVipBtnWithTitle:@"▶ VÀO FREE FIRE THƯỜNG" color:[UIColor colorWithRed:0.10 green:0.50 blue:0.90 alpha:1.0] y:currentY width:width];
+              [btnOpenNor addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              [scrollView addSubview:btnOpenNor];
+              currentY += 70;
+              
+              // 3. SECTION TỐI ƯU VÀ NHẸ TÂM PRO
+              UILabel *sec3 = [[UILabel alloc] initWithFrame:CGRectMake(25, currentY, width - 50, 25)];
+              sec3.text = @"🎯 CÔNG CỤ TỐI ƯU & NHẸ TÂM VIP PRO";
+              sec3.font = [UIFont systemFontOfSize:15 weight:UIFontWeightBold];
+              sec3.textColor = [UIColor systemGreenColor];
+              [scrollView addSubview:sec3];
+              currentY += 32;
+              
+              UIButton *btnNheTam = [self createVipBtnWithTitle:@"🎯 KÍCH HOẠT NHẸ TÂM PRO (SIÊU ÊM)" color:[UIColor colorWithRed:0.00 green:0.75 blue:0.35 alpha:1.0] y:currentY width:width];
+              [btnNheTam addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              [scrollView addSubview:btnNheTam];
+              currentY += 58;
+              
+              UIButton *btnFixLag = [self createVipBtnWithTitle:@"⚡ FIX LAG & FIX SIÊU LAG (MAX FPS)" color:[UIColor colorWithRed:0.15 green:0.70 blue:0.85 alpha:1.0] y:currentY width:width];
+              [btnFixLag addTarget:self action:@selector(btnClicked:) forControlEvents:UIControlEventTouchUpInside];
+              [scrollView addSubview:btnFixLag];
+              currentY += 80;
+              
+              scrollView.contentSize = CGSizeMake(width, currentY);
           }
-          @end
 
-          @interface LoginViewController : UIViewController <UITextFieldDelegate>
-          @property (nonatomic, strong) UITextField *keyField;
-          @property (nonatomic, strong) UILabel *errorLabel;
-          @end
-
-          @implementation LoginViewController
-          - (void)viewDidLoad {
-              [super viewDidLoad];
-              self.view.backgroundColor = [UIColor colorWithRed:0.8 green:0.1 blue:0.1 alpha:1.0];
-              
-              UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 150, self.view.bounds.size.width - 40, 50)];
-              titleLabel.text = @"BINDÉPZAI 123";
-              titleLabel.font = [UIFont boldSystemFontOfSize:32];
-              titleLabel.textColor = [UIColor whiteColor];
-              titleLabel.textAlignment = NSTextAlignmentCenter;
-              [self.view addSubview:titleLabel];
-              
-              self.keyField = [[UITextField alloc] initWithFrame:CGRectMake(40, 230, self.view.bounds.size.width - 80, 50)];
-              self.keyField.placeholder = @" Nhập Key Bản Quyền...";
-              self.keyField.secureTextEntry = YES;
-              self.keyField.backgroundColor = [UIColor whiteColor];
-              self.keyField.layer.cornerRadius = 12;
-              self.keyField.font = [UIFont systemFontOfSize:18];
-              [self.view addSubview:self.keyField];
-              
-              UIButton *loginBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-              loginBtn.frame = CGRectMake(40, 300, self.view.bounds.size.width - 80, 50);
-              [loginBtn setTitle:@"XÁC NHẬN ĐĂNG NHẬP" forState:UIControlStateNormal];
-              loginBtn.titleLabel.font = [UIFont boldSystemFontOfSize:18];
-              [loginBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-              loginBtn.backgroundColor = [UIColor systemOrangeColor];
-              loginBtn.layer.cornerRadius = 12;
-              [loginBtn addTarget:self action:@selector(handleLogin) forControlEvents:UIControlEventTouchUpInside];
-              [self.view addSubview:loginBtn];
-              
-              self.errorLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 370, self.view.bounds.size.width - 40, 30)];
-              self.errorLabel.text = @"⚠️ Key không chính xác!";
-              self.errorLabel.textColor = [UIColor yellowColor];
-              self.errorLabel.textAlignment = NSTextAlignmentCenter;
-              self.errorLabel.font = [UIFont boldSystemFontOfSize:16];
-              self.errorLabel.hidden = YES;
-              [self.view addSubview:self.errorLabel];
+          - (UIButton *)createVipBtnWithTitle:(NSString *)title color:(UIColor *)color y:(CGFloat)y width:(CGFloat)width {
+              UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+              btn.frame = CGRectMake(20, y, width - 40, 50);
+              [btn setTitle:title forState:UIControlStateNormal];
+              btn.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightBold];
+              [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+              btn.backgroundColor = color;
+              btn.layer.cornerRadius = 14;
+              btn.layer.shadowColor = color.CGColor;
+              btn.layer.shadowOffset = CGSizeMake(0, 4);
+              btn.layer.shadowOpacity = 0.4;
+              btn.layer.shadowRadius = 6;
+              return btn;
           }
 
-          - (void)handleLogin {
-              if ([self.keyField.text isEqualToString:@"bindepzai123"]) {
-                  MainViewController *mainVC = [[MainViewController alloc] init];
-                  mainVC.modalPresentationStyle = UIModalPresentationFullScreen;
-                  [self presentViewController:mainVC animated:YES completion:nil];
-              } else {
-                  self.errorLabel.hidden = NO;
-              }
+          - (void)btnClicked:(UIButton *)sender {
+              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO VIP" message:[NSString stringWithFormat:@"Đã kích hoạt thành công:\n%@", sender.currentTitle] preferredStyle:UIAlertControllerStyleAlert];
+              [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+              [self presentViewController:alert animated:YES completion:nil];
           }
           @end
 
@@ -110,7 +136,7 @@ jobs:
           @implementation AppDelegate
           - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
               self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-              self.window.rootViewController = [[LoginViewController alloc] init];
+              self.window.rootViewController = [[MainViewController alloc] init];
               [self.window makeKeyAndVisible];
               return YES;
           }
