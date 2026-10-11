@@ -11,8 +11,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepare Modern UI Source Code
+      - name: Compile and Package IPA
         run: |
+          set -e
+          
+          # 1. Tạo mã nguồn giao diện hiện đại
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -306,13 +309,12 @@ jobs:
 
           echo 'APPL???株' > "$APP_DIR/PkgInfo"
 
-          # Lấy chính xác đường dẫn SDK Simulator và ép target an toàn tuyệt đối chống lỗi
-          SIM_SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          echo "Using iOS Simulator SDK: $SIM_SDK_PATH"
+          # Biên dịch chuẩn kiến trúc arm64 trên Apple Silicon runner
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "Using SDK: $SDK_PATH"
 
-          xcrun --sdk iphonesimulator clang \
-                -isysroot "$SIM_SDK_PATH" \
-                -mios-simulator-version-min=14.0 \
+          clang -arch arm64 \
+                -isysroot "$SDK_PATH" \
                 -fobjc-arc \
                 -framework UIKit \
                 -framework Foundation \
@@ -321,7 +323,7 @@ jobs:
                 -o "$APP_DIR/BinVipProExec"
 
           zip -r 3105_binvippro.ipa Payload
-          echo "=> BUILD THÀNH CÔNG VÀ ĐÓNG GÓI IPA HOÀN TẤT!"
+          echo "=> BUILD THÀNH CÔNG HOÀN TẤT!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
