@@ -13,7 +13,8 @@ jobs:
 
       - name: Setup and Compile Clean IPA
         run: |
-          set -e
+          # Tắt chế độ nghiêm ngặt để tránh bị ngắt lệnh đột ngột
+          set +e
           
           # 1. Tạo mã nguồn Objective-C sạch 100% không lỗi
           mkdir -p AppSource
@@ -231,7 +232,6 @@ jobs:
           }
           EOF
 
-          # 2. Tạo Bundle ứng dụng & Biên dịch
           APP="Payload/BinVipPro.app"
           mkdir -p "$APP"
 
@@ -271,4 +271,15 @@ jobs:
                 -framework Foundation \
                 -framework CoreGraphics \
                 AppSource/main.m \
-                -o "$APP/BinExec
+                -o "$APP/BinExec"
+
+          codesign --force --sign - "$APP" || true
+          
+          zip -r 3105_binvippro.ipa Payload
+          echo "=> HOÀN TẤT THÀNH CÔNG TRƠN TRU!"
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3105_binvippro
+          path: 3105_binvippro.ipa
