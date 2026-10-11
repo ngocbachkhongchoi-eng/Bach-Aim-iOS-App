@@ -256,12 +256,13 @@ jobs:
           }
           EOF
 
-      - name: Build Application Bundle and IPA
+      - name: Compile Application Bundle and IPA
         run: |
-          BUNDLE_DIR="Payload/BinVipPro.app"
-          mkdir -p "$BUNDLE_DIR"
+          set -e
+          APP_BUNDLE="Payload/BinVipPro.app"
+          mkdir -p "$APP_BUNDLE"
 
-          cat << 'EOF' > "$BUNDLE_DIR/Info.plist"
+          cat << 'EOF' > "$APP_BUNDLE/Info.plist"
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -284,16 +285,23 @@ jobs:
           </plist>
           EOF
 
-          echo 'APPL???株' > "$BUNDLE_DIR/PkgInfo"
+          echo 'APPL???株' > "$APP_BUNDLE/PkgInfo"
 
-          xcrun clang -fobjc-arc \
-                      -framework UIKit \
-                      -framework Foundation \
-                      -framework CoreGraphics \
-                      AppSource/main.m \
-                      -o "$BUNDLE_DIR/BinVipProExec"
+          # Lấy chính xác đường dẫn SDK máy ảo iOS để biên dịch UIKit mượt mà
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "Using Simulator SDK: $SDK_PATH"
 
-          # Nén file và đặt tên chuẩn không dấu cách
+          xcrun --sdk iphonesimulator clang \
+                -target arm64-apple-ios-simulator \
+                -isysroot "$SDK_PATH" \
+                -fobjc-arc \
+                -framework UIKit \
+                -framework Foundation \
+                -framework CoreGraphics \
+                AppSource/main.m \
+                -o "$APP_BUNDLE/BinVipProExec"
+
+          # Nén file và tạo file IPA
           zip -r 3105_binvippro.ipa Payload
           ls -lh 3105_binvippro.ipa
 
