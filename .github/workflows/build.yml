@@ -11,13 +11,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Compile Native iOS Utility App & Package IPA
+      - name: Setup Xcode and Compile
         run: |
+          # Đảm bảo chọn đúng phiên bản Xcode trên runner
+          sudo xcode-select -s /Applications/Xcode.app
+          
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
           #import <CoreGraphics/CoreGraphics.h>
-          #import <sys/resource.h>
 
           @interface BinVipProMenu : NSObject
           + (instancetype)sharedInstance;
@@ -44,7 +46,6 @@ jobs:
               dispatch_async(dispatch_get_main_queue(), ^{
                   if (overlayWindow) return;
                   
-                  // Tạo cửa sổ đè màn hình ứng dụng
                   overlayWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
                   overlayWindow.windowLevel = UIWindowLevelAlert + 999;
                   overlayWindow.backgroundColor = [UIColor clearColor];
@@ -54,7 +55,6 @@ jobs:
                   overlayWindow.rootViewController = rootVC;
                   [overlayWindow makeKeyAndVisible];
                   
-                  // Menu chính nền đen
                   mainMenuView = [[UIView alloc] initWithFrame:CGRectMake(40, 60, 320, 480)];
                   mainMenuView.backgroundColor = [UIColor colorWithRed:0.12 green:0.12 blue:0.14 alpha:0.95];
                   mainMenuView.layer.cornerRadius = 16;
@@ -75,7 +75,6 @@ jobs:
                   [closeBtn addTarget:self action:@selector(hideMenu) forControlEvents:UIControlEventTouchUpInside];
                   [mainMenuView addSubview:closeBtn];
                   
-                  // Thanh chọn 2 mục: AIM và CÀI ĐẶT
                   UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"🎯 AIM", @"⚙️ CÀI ĐẶT"]];
                   segmentedControl.frame = CGRectMake(15, 50, 290, 32];
                   segmentedControl.selectedSegmentIndex = 0;
@@ -102,7 +101,6 @@ jobs:
               }
           }
 
-          // Mục AIM: Aim Head
           - (void)setupAimTab:(UIView * _Nonnull)view {
               UILabel *aimHeader = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, 290, 25)];
               aimHeader.text = @"AIMBOT SETTINGS (AIM HEAD)";
@@ -130,7 +128,6 @@ jobs:
               }
           }
 
-          // Mục CÀI ĐẶT: Tên máy, ngôn ngữ, Menu đỏ Inject, khởi chạy FF, DNS Antiban
           - (void)setupSettingsTab:(UIView * _Nonnull)view {
               CGFloat yPos = 5;
               
@@ -152,7 +149,6 @@ jobs:
               [view addSubview:langLbl];
               yPos += 30;
               
-              // Menu màu đỏ cho Inject và khởi chạy
               UIView *redInjectView = [[UIView alloc] initWithFrame:CGRectMake(0, yPos, 290, 140)];
               redInjectView.backgroundColor = [UIColor colorWithRed:0.7 green:0.1 blue:0.1 alpha:0.9];
               redInjectView.layer.cornerRadius = 10;
@@ -204,7 +200,6 @@ jobs:
               
               yPos += 150;
               
-              // Nút tải cấu hình DNS Antiban
               UIButton *dnsBtn = [UIButton buttonWithType:UIButtonTypeSystem];
               dnsBtn.frame = CGRectMake(0, yPos, 290, 40);
               [dnsBtn setTitle:@"🛡️ Tải Cấu Hình DNS Antiban" forState:UIControlStateNormal];
@@ -215,7 +210,6 @@ jobs:
               [view addSubview:dnsBtn];
               yPos += 45;
               
-              // Trạng thái Antiban
               statusAntibanLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yPos, 290, 25)];
               statusAntibanLabel.text = isAntibanInstalled ? @"Trạng thái: Đã cài đặt antiban" : @"Trạng thái: Chưa cài đặt antiban";
               statusAntibanLabel.textColor = isAntibanInstalled ? [UIColor greenColor] : [UIColor orangeColor];
@@ -265,7 +259,6 @@ jobs:
           }
           EOF
           
-          # Đóng gói cấu trúc thư mục IPA
           mkdir -p "Payload/3105 binvippro.app"
           echo 'APPL???株' > "Payload/3105 binvippro.app/PkgInfo"
           
@@ -290,11 +283,10 @@ jobs:
           </plist>
           EOF
 
-          # Biên dịch file mã nguồn thành tệp thực thi iOS
-          xcrun --sdk iphoneos clang -arch arm64 -fobjc-arc -framework UIKit -framework Foundation -framework CoreGraphics AppSource/main.m -o "Payload/3105 binvippro.app/3105_binvippro" || \
-          clang -fobjc-arc -framework UIKit -framework Foundation -framework CoreGraphics AppSource/main.m -o "Payload/3105 binvippro.app/3105_binvippro"
+          # Trỏ đúng SDK path và cấu hình cờ biên dịch để tránh lỗi Exit Code 1
+          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+          xcrun --sdk iphoneos clang -target arm64-apple-ios14.0 -isysroot "$SDK_PATH" -fobjc-arc -framework UIKit -framework Foundation -framework CoreGraphics AppSource/main.m -o "Payload/3105 binvippro.app/3105_binvippro"
 
-          # Nén thành tệp IPA hoàn chỉnh
           zip -r 3105_binvippro.ipa Payload
           echo "Build IPA 3105 binvippro thành công!"
 
