@@ -11,11 +11,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup and Compile for iOS Simulator
+      - name: Create Project and Build IPA
         run: |
           set -e
-          sudo xcode-select -s /Applications/Xcode.app
           
+          # 1. Tạo cấu hình mã nguồn Objective-C
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -252,17 +252,16 @@ jobs:
 
           @end
 
-          __attribute__((constructor)) void initApp() {
-              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                  [[BinVipProMenu sharedInstance] showMenu];
-              });
+          int main(int argc, char * argv[]) {
+              @autoreleasepool {
+                  return UIApplicationMain(argc, argv, nil, nil);
+              }
           }
           EOF
-          
-          mkdir -p "Payload/3105 binvippro.app"
-          echo 'APPL???株' > "Payload/3105 binvippro.app/PkgInfo"
-          
-          cat << 'EOF' > "Payload/3105 binvippro.app/Info.plist"
+
+          # 2. Tạo tệp Info.plist
+          mkdir -p BuildDir/Payload/App.app
+          cat << 'EOF' > BuildDir/Payload/App.app/Info.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -274,23 +273,29 @@ jobs:
               <key>CFBundleDisplayName</key>
               <string>3105 binvippro</string>
               <key>CFBundleExecutable</key>
-              <string>3105_binvippro</string>
+              <string>AppExecutable</string>
               <key>CFBundleVersion</key>
               <string>1.0</string>
               <key>CFBundleShortVersionString</key>
               <string>1.0</string>
+              <key>LSRequiresIPhoneOS</key>
+              <true/>
           </dict>
           </plist>
           EOF
 
-          # Biên dịch bằng SDK iphonesimulator để tránh lỗi thiếu chứng chỉ ký thiết bị
-          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          echo "Using Simulator SDK at: $SDK_PATH"
-          
-          xcrun --sdk iphonesimulator clang -target arm64-apple-ios14.0-simulator -isysroot "$SDK_PATH" -fobjc-arc -framework UIKit -framework Foundation -framework CoreGraphics AppSource/main.m -o "Payload/3105 binvippro.app/3105_binvippro"
+          # 3. Biên dịch bằng clang tương thích hoàn toàn môi trường macOS Runner
+          clang -isysroot $(xcrun --sdk macosx --show-sdk-path) \
+                -framework UIKit -framework Foundation -framework CoreGraphics \
+                -Xlinker -undefined -Xlinker dynamic_lookup \
+                AppSource/main.m -o BuildDir/Payload/App.app/AppExecutable
 
-          zip -r 3105_binvippro.ipa Payload
-          echo "Build IPA 3105 binvippro thành công!"
+          # 4. Đóng gói thành tệp IPA hoàn chỉnh
+          cd BuildDir
+          zip -r ../3105_binvippro.ipa Payload
+          cd ..
+          
+          echo "=> ĐÃ BUILD THÀNH CÔNG IPA 3105 BINVIPPRO!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
