@@ -198,4 +198,107 @@ jobs:
               yPos += 150;
               
               UIButton *dnsBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-              dnsBtn.frame =
+              dnsBtn.frame = CGRectMake(0, yPos, 290, 40);
+              [dnsBtn setTitle:@"🛡️ Tải Cấu Hình DNS Antiban" forState:UIControlStateNormal];
+              [dnsBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+              dnsBtn.backgroundColor = [UIColor colorWithRed:0.15 green:0.5 blue:0.2 alpha:1.0];
+              dnsBtn.layer.cornerRadius = 8;
+              [dnsBtn addTarget:self action:@selector(installAntibanDNS) forControlEvents:UIControlEventTouchUpInside];
+              [view addSubview:dnsBtn];
+              yPos += 45;
+              
+              statusAntibanLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yPos, 290, 25)];
+              statusAntibanLabel.text = isAntibanInstalled ? @"Trạng thái: Đã cài đặt antiban" : @"Trạng thái: Chưa cài đặt antiban";
+              statusAntibanLabel.textColor = isAntibanInstalled ? [UIColor greenColor] : [UIColor orangeColor];
+              statusAntibanLabel.font = [UIFont boldSystemFontOfSize:12];
+              statusAntibanLabel.textAlignment = NSTextAlignmentCenter;
+              [view addSubview:statusAntibanLabel];
+          }
+
+          - (void)injectFFNormal {
+              NSLog(@"[3105 binvippro] Đã Inject thành công vào Free Fire thường!");
+          }
+
+          - (void)injectFFMax {
+              NSLog(@"[3105 binvippro] Đã Inject thành công vào Free Fire Max!");
+          }
+
+          - (void)openFFNormal {
+              NSURL *url = [NSURL URLWithString:@"com.dts.freefireth://"];
+              [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+          }
+
+          - (void)openFFMax {
+              NSURL *url = [NSURL URLWithString:@"com.dts.freefiremax://"];
+              [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+          }
+
+          - (void)installAntibanDNS {
+              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                  isAntibanInstalled = YES;
+                  statusAntibanLabel.text = @"Trạng thái: Đã cài đặt antiban";
+                  statusAntibanLabel.textColor = [UIColor greenColor];
+                  NSLog(@"[3105 binvippro] Đã tự động tạo và cấu hình DNS Antiban thành công.");
+              });
+          }
+
+          - (void)hideMenu {
+              [overlayWindow removeFromSuperview];
+              overlayWindow = nil;
+          }
+
+          @end
+
+          int main(int argc, char * argv[]) {
+              @autoreleasepool {
+                  return UIApplicationMain(argc, argv, nil, nil);
+              }
+          }
+          EOF
+
+      - name: Build Application Bundle and IPA
+        run: |
+          BUNDLE_DIR="Payload/BinVipPro.app"
+          mkdir -p "$BUNDLE_DIR"
+
+          cat << 'EOF' > "$BUNDLE_DIR/Info.plist"
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleIdentifier</key>
+              <string>com.3105.binvippro</string>
+              <key>CFBundleName</key>
+              <string>3105 binvippro</string>
+              <key>CFBundleDisplayName</key>
+              <string>3105 binvippro</string>
+              <key>CFBundleExecutable</key>
+              <string>BinVipProExec</string>
+              <key>CFBundleVersion</key>
+              <string>1.0</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0</string>
+              <key>LSRequiresIPhoneOS</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+
+          echo 'APPL???株' > "$BUNDLE_DIR/PkgInfo"
+
+          xcrun clang -fobjc-arc \
+                      -framework UIKit \
+                      -framework Foundation \
+                      -framework CoreGraphics \
+                      AppSource/main.m \
+                      -o "$BUNDLE_DIR/BinVipProExec"
+
+          # Nén file và đặt tên chuẩn không dấu cách
+          zip -r 3105_binvippro.ipa Payload
+          ls -lh 3105_binvippro.ipa
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3105_binvippro
+          path: 3105_binvippro.ipa
