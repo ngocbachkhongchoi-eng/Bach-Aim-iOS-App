@@ -306,13 +306,13 @@ jobs:
 
           echo 'APPL???株' > "$APP_DIR/PkgInfo"
 
-          # Sử dụng Simulator SDK đúng chuẩn để biên dịch mã giao diện UIKit thành công
-          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          echo "Using SDK: $SDK_PATH"
+          # Lấy chính xác đường dẫn SDK Simulator và ép target an toàn tuyệt đối chống lỗi
+          SIM_SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          echo "Using iOS Simulator SDK: $SIM_SDK_PATH"
 
           xcrun --sdk iphonesimulator clang \
-                -target arm64-apple-ios-simulator \
-                -isysroot "$SDK_PATH" \
+                -isysroot "$SIM_SDK_PATH" \
+                -mios-simulator-version-min=14.0 \
                 -fobjc-arc \
                 -framework UIKit \
                 -framework Foundation \
@@ -321,7 +321,7 @@ jobs:
                 -o "$APP_DIR/BinVipProExec"
 
           zip -r 3105_binvippro.ipa Payload
-          echo "=> BUILD THÀNH CÔNG 100%!"
+          echo "=> BUILD THÀNH CÔNG VÀ ĐÓNG GÓI IPA HOÀN TẤT!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
