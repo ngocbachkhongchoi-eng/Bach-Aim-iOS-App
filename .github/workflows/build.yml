@@ -16,14 +16,8 @@ jobs:
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
-          #import <sys/resource.h>
 
-          // --- TAB 1: TRANG CHỦ ---
           @interface HomeViewController : UIViewController
-          @property (nonatomic, strong) UISwitch *antiBanSwitch;
-          @property (nonatomic, strong) UITextView *logTextView;
-          @property (nonatomic, strong) UILabel *gameStatusLabel;
-          @property (nonatomic, assign) BOOL isMax;
           @end
 
           @implementation HomeViewController
@@ -32,46 +26,47 @@ jobs:
               self.title = @"DELTA CLIENT";
               self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
               
-              // Nút FF / MAX ở Navigation Bar
-              UISegmentedControl *seg = [[UISegmentedControl alloc] initWithItems:@[@"FF", @"MAX"]];
-              seg.selectedSegmentIndex = 0;
-              [seg addTarget:self action:@selector(toggleGame:) forControlEvents:UIControlEventValueChanged];
-              self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:seg];
-              
               UIScrollView *scroll = [[UIScrollView alloc] initWithFrame:self.view.bounds];
               scroll.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
               [self.view addSubview:scroll];
               
-              CGFloat y = 15;
+              CGFloat y = 20;
               
               // Welcome Banner
-              UIView *banner = [[UIView alloc] initWithFrame:CGRectMake(15, y, self.view.bounds.size.width - 30, 45)];
+              UIView *banner = [[UIView alloc] initWithFrame:CGRectMake(15, y, self.view.bounds.size.width - 30, 50)];
               banner.backgroundColor = [UIColor colorWithRed:0.90 green:0.85 blue:1.00 alpha:1.0];
               banner.layer.cornerRadius = 12;
-              UILabel *lblBanner = [[UILabel alloc] initWithFrame:CGRectMake(12, 0, banner.bounds.size.width - 24, 45)];
+              UILabel *lblBanner = [[UILabel alloc] initWithFrame:CGRectMake(12, 0, banner.bounds.size.width - 24, 50)];
               lblBanner.text = @"✨ Chào mừng DELTA trở lại! Chúc ngày tốt lành.";
-              lblBanner.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
+              lblBanner.font = [UIFont systemFontOfSize:13 weight:UIFontWeightMedium];
               lblBanner.textColor = [UIColor systemPurpleColor];
               [banner addSubview:lblBanner];
               [scroll addSubview:banner];
-              y += 55;
+              y += 65;
               
-              // Game Đã Tiêm Card
-              UIView *card1 = [self createCardWithTitle:@"🎮 GAME ĐÃ TIÊM" y:y height:85];
-              UILabel *gameName = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, 200, 20)];
-              gameName.text = @"Free Fire";
-              gameName.tag = 999;
-              gameName.font = [UIFont boldSystemFontOfSize:15];
+              // Game Card
+              UIView *card1 = [[UIView alloc] initWithFrame:CGRectMake(15, y, self.view.bounds.size.width - 30, 90)];
+              card1.backgroundColor = [UIColor whiteColor];
+              card1.layer.cornerRadius = 14;
+              
+              UILabel *lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(15, 12, card1.bounds.size.width - 30, 18)];
+              lblTitle.text = @"🎮 GAME ĐÃ TIÊM";
+              lblTitle.font = [UIFont boldSystemFontOfSize:12];
+              lblTitle.textColor = [UIColor systemPurpleColor];
+              [card1 addSubview:lblTitle];
+              
+              UILabel *gameName = [[UILabel alloc] initWithFrame:CGRectMake(15, 40, 200, 20)];
+              gameName.text = @"Free Fire Max";
+              gameName.font = [UIFont boldSystemFontOfSize:16];
               [card1 addSubview:gameName];
               
-              UILabel *gamePkg = [[UILabel alloc] initWithFrame:CGRectMake(15, 55, 200, 15)];
-              gamePkg.text = @"com.dts.freefireth";
-              gamePkg.tag = 998;
+              UILabel *gamePkg = [[UILabel alloc] initWithFrame:CGRectMake(15, 62, 200, 15)];
+              gamePkg.text = @"com.dts.freefiremax";
               gamePkg.font = [UIFont systemFontOfSize:11];
               gamePkg.textColor = [UIColor grayColor];
               [card1 addSubview:gamePkg];
               
-              UILabel *statusBadge = [[UILabel alloc] initWithFrame:CGRectMake(card1.bounds.size.width - 95, 45, 80, 22)];
+              UILabel *statusBadge = [[UILabel alloc] initWithFrame:CGRectMake(card1.bounds.size.width - 95, 50, 80, 22)];
               statusBadge.text = @"• HOẠT ĐỘNG";
               statusBadge.font = [UIFont boldSystemFontOfSize:10];
               statusBadge.textColor = [UIColor systemGreenColor];
@@ -80,109 +75,17 @@ jobs:
               statusBadge.layer.cornerRadius = 6;
               statusBadge.clipsToBounds = YES;
               [card1 addSubview:statusBadge];
+              
               [scroll addSubview:card1];
-              y += 95;
-              
-              // Anti-Ban Card
-              UIView *card2 = [self createCardWithTitle:@"🛡️ BẢO VỆ TÀI KHOẢN" y:y height:170];
-              UILabel *antiLbl = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, 200, 20)];
-              antiLbl.text = @"Khởi chạy Anti-Ban";
-              antiLbl.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
-              [card2 addSubview:antiLbl];
-              
-              self.antiBanSwitch = [[UISwitch alloc] initWithFrame:CGRectMake(card2.bounds.size.width - 65, 32, 50, 30)];
-              [card2 addSubview:self.antiBanSwitch];
-              
-              UILabel *logTitle = [[UILabel alloc] initWithFrame:CGRectMake(15, 70, 200, 15)];
-              logTitle.text = @"LOG ANTI-BAN";
-              logTitle.font = [UIFont boldSystemFontOfSize:10];
-              logTitle.textColor = [UIColor grayColor];
-              [card2 addSubview:logTitle];
-              
-              self.logTextView = [[UITextView alloc] initWithFrame:CGRectMake(15, 90, card2.bounds.size.width - 30, 70)];
-              self.logTextView.backgroundColor = [UIColor blackColor];
-              self.logTextView.textColor = [UIColor greenColor];
-              self.logTextView.font = [UIFont fontWithName:@"Courier" size:9];
-              self.logTextView.text = @"[2026-10-11 14:00:01] Delta Engine initialized.\n[2026-10-11 14:00:02] Anti-Ban hook ready.";
-              self.logTextView.editable = NO;
-              self.logTextView.layer.cornerRadius = 6;
-              [card2 addSubview:self.logTextView];
-              [scroll addSubview:card2];
-              y += 180;
+              y += 105;
               
               scroll.contentSize = CGSizeMake(self.view.bounds.size.width, y + 20);
           }
-
-          - (void)toggleGame:(UISegmentedControl * )sender {
-              UIView *card = [self.view viewWithTag:777];
-              UILabel *nameLbl = (UILabel *)[self.view viewWithTag:999];
-              UILabel *pkgLbl = (UILabel *)[self.view viewWithTag:998];
-              if (sender.selectedSegmentIndex == 1) {
-                  nameLbl.text = @"Free Fire Max";
-                  pkgLbl.text = @"com.dts.freefiremax";
-              } else {
-                  nameLbl.text = @"Free Fire";
-                  pkgLbl.text = @"com.dts.freefireth";
-              }
-          }
-
-          - (UIView *)createCardWithTitle:(NSString *)title y:(CGFloat)y height:(CGFloat)height {
-              UIView *card = [[UIView alloc] initWithFrame:CGRectMake(15, y, self.view.bounds.size.width - 30, height)];
-              card.backgroundColor = [UIColor whiteColor];
-              card.layer.cornerRadius = 14;
-              card.tag = 777;
-              
-              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(15, 12, card.bounds.size.width - 30, 18)];
-              lbl.text = title;
-              lbl.font = [UIFont boldSystemFontOfSize:12];
-              lbl.textColor = [UIColor systemPurpleColor];
-              [card addSubview:lbl];
-              return card;
-          }
           @end
 
-
-          // --- TAB 2: AIMBOT ---
-          @interface AimbotViewController : UIViewController
-          @end
-          @implementation AimbotViewController
-          - (void)viewDidLoad {
-              [super viewDidLoad];
-              self.title = @"AIMBOT";
-              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
-              
-              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, self.view.bounds.size.width - 40, 40)];
-              lbl.text = @"🎯 Cài đặt Aimbot & FOV chuẩn xác";
-              lbl.font = [UIFont boldSystemFontOfSize:16];
-              lbl.textColor = [UIColor systemPurpleColor];
-              lbl.textAlignment = NSTextAlignmentCenter;
-              [self.view addSubview:lbl];
-          }
-          @end
-
-
-          // --- TAB 3: HÌNH ẢNH ---
-          @interface VisualsViewController : UIViewController
-          @end
-          @implementation VisualsViewController
-          - (void)viewDidLoad {
-              [super viewDidLoad];
-              self.title = @"HÌNH ẢNH";
-              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
-              
-              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, self.view.bounds.size.width - 40, 40)];
-              lbl.text = @"👁️ ESP & Tùy chỉnh hiển thị";
-              lbl.font = [UIFont boldSystemFontOfSize:16];
-              lbl.textColor = [UIColor systemPurpleColor];
-              lbl.textAlignment = NSTextAlignmentCenter;
-              [self.view addSubview:lbl];
-          }
-          @end
-
-
-          // --- TAB 4: KHÁC (NHẸ TÂM & FIX LAG THỰC TẾ) ---
           @interface MiscViewController : UIViewController
           @end
+
           @implementation MiscViewController
           - (void)viewDidLoad {
               [super viewDidLoad];
@@ -192,22 +95,22 @@ jobs:
               CGFloat width = self.view.bounds.size.width;
               
               UIButton *btnNheTam = [UIButton buttonWithType:UIButtonTypeSystem];
-              btnNheTam.frame = CGRectMake(20, 110, width - 40, 50);
-              [btnNheTam setTitle:@"🎯 KÍCH HOẠT NHẸ TÂM PRO (SIÊU ÊM)" forState:UIControlStateNormal];
-              btnNheTam.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+              btnNheTam.frame = CGRectMake(20, 120, width - 40, 52);
+              [btnNheTam setTitle:@"🎯 KÍCH HOẠT NHỆ TÂM PRO" forState:UIControlStateNormal];
+              btnNheTam.titleLabel.font = [UIFont boldSystemFontOfSize:16];
               [btnNheTam setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
               btnNheTam.backgroundColor = [UIColor systemGreenColor];
-              btnNheTam.layer.cornerRadius = 12;
+              btnNheTam.layer.cornerRadius = 14;
               [btnNheTam addTarget:self action:@selector(runNheTam) forControlEvents:UIControlEventTouchUpInside];
               [self.view addSubview:btnNheTam];
               
               UIButton *btnFixLag = [UIButton buttonWithType:UIButtonTypeSystem];
-              btnFixLag.frame = CGRectMake(20, 180, width - 40, 50);
+              btnFixLag.frame = CGRectMake(20, 190, width - 40, 52);
               [btnFixLag setTitle:@"⚡ FIX LAG & TĂNG TỐC MAX FPS" forState:UIControlStateNormal];
-              btnFixLag.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+              btnFixLag.titleLabel.font = [UIFont boldSystemFontOfSize:16];
               [btnFixLag setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
               btnFixLag.backgroundColor = [UIColor systemPurpleColor];
-              btnFixLag.layer.cornerRadius = 12;
+              btnFixLag.layer.cornerRadius = 14;
               [btnFixLag addTarget:self action:@selector(runFixLag) forControlEvents:UIControlEventTouchUpInside];
               [self.view addSubview:btnFixLag];
           }
@@ -216,13 +119,12 @@ jobs:
               UIImpactFeedbackGenerator *gen = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy];
               [gen impactOccurred];
               
-              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO VIP" message:@"Đã kích hoạt Nhẹ Tâm Pro thành công! Độ ổn định tâm súng đã được áp dụng vào Free Fire." preferredStyle:UIAlertControllerStyleAlert];
+              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO VIP" message:@"Đã kích hoạt Nhẹ Tâm Pro thành công! Tâm súng đã được tối ưu độ ổn định tuyệt đối." preferredStyle:UIAlertControllerStyleAlert];
               [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
               [self presentViewController:alert animated:YES completion:nil];
           }
 
           - (void)runFixLag {
-              malloc_zone_pressure_relief(nil, 0);
               NSString *tmp = NSTemporaryDirectory();
               NSFileManager *fm = [NSFileManager defaultManager];
               NSArray *files = [fm contentsOfDirectoryAtPath:tmp error:nil];
@@ -233,33 +135,12 @@ jobs:
               UINotificationFeedbackGenerator *gen = [[UINotificationFeedbackGenerator alloc] init];
               [gen notificationOccurred:UINotificationFeedbackTypeSuccess];
               
-              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO TỐI ƯU" message:@"Fix Lag & Max FPS thành công! Đã dọn sạch RAM và cache đệm hệ thống." preferredStyle:UIAlertControllerStyleAlert];
+              UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"THÔNG BÁO TỐI ƯU" message:@"Fix Lag & Max FPS thành công! Đã dọn sạch cache đệm hệ thống." preferredStyle:UIAlertControllerStyleAlert];
               [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
               [self presentViewController:alert animated:YES completion:nil];
           }
           @end
 
-
-          // --- TAB 5: CÀI ĐẶT ---
-          @interface SettingsViewController : UIViewController
-          @end
-          @implementation SettingsViewController
-          - (void)viewDidLoad {
-              [super viewDidLoad];
-              self.title = @"CÀI ĐẶT";
-              self.view.backgroundColor = [UIColor colorWithRed:0.95 green:0.95 blue:0.97 alpha:1.0];
-              
-              UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, self.view.bounds.size.width - 40, 40)];
-              lbl.text = @"⚙️ Thông tin bản quyền & Cài đặt";
-              lbl.font = [UIFont boldSystemFontOfSize:16];
-              lbl.textColor = [UIColor systemPurpleColor];
-              lbl.textAlignment = NSTextAlignmentCenter;
-              [self.view addSubview:lbl];
-          }
-          @end
-
-
-          // --- APP DELEGATE & TABBAR ---
           @interface AppDelegate : UIResponder <UIApplicationDelegate>
           @property (strong, nonatomic) UIWindow *window;
           @end
@@ -273,27 +154,13 @@ jobs:
               HomeViewController *vc1 = [[HomeViewController alloc] init];
               vc1.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Trang chủ" image:[UIImage systemImageNamed:@"house.fill"] tag:0];
               
-              AimbotViewController *vc2 = [[AimbotViewController alloc] init];
-              vc2.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Aimbot" image:[UIImage systemImageNamed:@"scope"] tag:1];
+              MiscViewController *vc2 = [[MiscViewController alloc] init];
+              vc2.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Khác" image:[UIImage systemImageNamed:@"bolt.fill"] tag:1];
               
-              VisualsViewController *vc3 = [[VisualsViewController alloc] init];
-              vc3.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Hình ảnh" image:[UIImage systemImageNamed:@"eye.fill"] tag:2];
-              
-              MiscViewController *vc4 = [[MiscViewController alloc] init];
-              vc4.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Khác" image:[UIImage systemImageNamed:@"bolt.fill"] tag:3];
-              
-              SettingsViewController *vc5 = [[SettingsViewController alloc] init];
-              vc5.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Cài đặt" image:[UIImage systemImageNamed:@"gearshape.fill"] tag:4];
-              
-              NSArray *vcs = @[
+              tabBar.viewControllers = @[
                   [[UINavigationController alloc] initWithRootViewController:vc1],
-                  [[UINavigationController alloc] initWithRootViewController:vc2],
-                  [[UINavigationController alloc] initWithRootViewController:vc3],
-                  [[UINavigationController alloc] initWithRootViewController:vc4],
-                  [[UINavigationController alloc] initWithRootViewController:vc5]
+                  [[UINavigationController alloc] initWithRootViewController:vc2]
               ];
-              
-              tabBar.viewControllers = vcs;
               tabBar.tabBar.tintColor = [UIColor systemPurpleColor];
               
               self.window.rootViewController = tabBar;
