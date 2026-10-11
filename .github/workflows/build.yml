@@ -11,12 +11,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup and Compile Clean IPA
+      - name: Setup and Compile for Real iOS Device
         run: |
-          # Tắt chế độ nghiêm ngặt để tránh bị ngắt lệnh đột ngột
           set +e
           
-          # 1. Tạo mã nguồn Objective-C sạch 100% không lỗi
+          # 1. Tạo mã nguồn Objective-C sạch 100%
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -260,11 +259,13 @@ jobs:
 
           echo 'APPL???株' > "$APP/PkgInfo"
 
-          SDK=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          # Sử dụng SDK MÁY THẬT (iphoneos) để eSign ký và cài đặt bình thường
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
           
-          xcrun --sdk iphonesimulator clang \
+          xcrun --sdk iphoneos clang \
                 -arch arm64 \
                 -isysroot "$SDK" \
+                -miphoneos-version-min=14.0 \
                 -fobjc-arc \
                 -lobjc \
                 -framework UIKit \
@@ -276,7 +277,7 @@ jobs:
           codesign --force --sign - "$APP" || true
           
           zip -r 3105_binvippro.ipa Payload
-          echo "=> HOÀN TẤT THÀNH CÔNG TRƠN TRU!"
+          echo "=> ĐÓNG GÓI IPA CHO MÁY THẬT THÀNH CÔNG!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
