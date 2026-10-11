@@ -9,12 +9,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Create iOS App Swift Source & Compile
+      - name: Create iOS Swift App
         run: |
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.swift
+          import UIKit
           import SwiftUI
 
           struct LoginView: View {
@@ -73,22 +74,10 @@ jobs:
                               .bold()
                               .foregroundColor(.white)
                           
-                          Text("Công cụ IPA | Quản lý Chứng chỉ | Thư viện")
+                          Text("Công cụ IPA | Quản lý Chứng chỉ")
                               .foregroundColor(.white)
                       }
                   }
-              }
-          }
-
-          @main
-          struct AppEntry {
-              static func main() {
-                  UIApplicationMain(
-                      CommandLine.argc,
-                      CommandLine.unsafeArgv,
-                      nil,
-                      NSStringFromClass(AppDelegate.self)
-                  )
               }
           }
 
@@ -102,12 +91,18 @@ jobs:
                   return true
               }
           }
+
+          UIApplicationMain(
+              CommandLine.argc,
+              CommandLine.unsafeArgv,
+              nil,
+              NSStringFromClass(AppDelegate.self)
+          )
           EOF
 
-          # Biên dịch Swift ra Binary thực thi cho iOS ARM64
-          xcrun -sdk iphoneos swiftc AppSource/main.swift -o bindepzai123 -target arm64-apple-ios14.0
+          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+          swiftc -sdk $SDK_PATH -target arm64-apple-ios14.0 AppSource/main.swift -o bindepzai123
 
-          # Đóng gói cấu trúc Payload IPA chuẩn
           mkdir -p Payload/bindepzai123.app
           mv bindepzai123 Payload/bindepzai123.app/
           
