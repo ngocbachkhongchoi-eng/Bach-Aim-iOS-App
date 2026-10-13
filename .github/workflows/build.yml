@@ -5,17 +5,17 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-13
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup and Compile for Real iOS Device
+      - name: Setup and Compile Fast for Real iOS Device
         run: |
           set +e
           
-          # 1. Tạo mã nguồn Objective-C sạch 100%
+          # 1. Tạo mã nguồn Objective-C chuẩn eSign
           mkdir -p AppSource
           cat << 'EOF' > AppSource/main.m
           #import <UIKit/UIKit.h>
@@ -257,7 +257,6 @@ jobs:
           </plist>
           EOF
 
-          # Chuẩn hóa PkgInfo an toàn cho eSign
           echo -n "APPL????0700" > "$APP/PkgInfo"
 
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
@@ -274,13 +273,11 @@ jobs:
                 AppSource/main.m \
                 -o "$APP/BinExec"
 
-          # Cấp quyền thực thi bắt buộc cho tệp binary để eSign nhận dạng thành công
           chmod +x "$APP/BinExec"
-
           codesign --force --sign - "$APP" || true
           
           zip -r 3105_binvippro.ipa Payload
-          echo "=> ĐÓNG GÓI IPA CHUẨN ESIGN THÀNH CÔNG!"
+          echo "=> BUILD SIÊU NHANH HOÀN TẤT!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
