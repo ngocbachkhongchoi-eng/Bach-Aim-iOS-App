@@ -257,9 +257,9 @@ jobs:
           </plist>
           EOF
 
-          echo 'APPL???株' > "$APP/PkgInfo"
+          # Chuẩn hóa PkgInfo an toàn cho eSign
+          echo -n "APPL????0700" > "$APP/PkgInfo"
 
-          # Sử dụng SDK MÁY THẬT (iphoneos) để eSign ký và cài đặt bình thường
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
           
           xcrun --sdk iphoneos clang \
@@ -274,10 +274,13 @@ jobs:
                 AppSource/main.m \
                 -o "$APP/BinExec"
 
+          # Cấp quyền thực thi bắt buộc cho tệp binary để eSign nhận dạng thành công
+          chmod +x "$APP/BinExec"
+
           codesign --force --sign - "$APP" || true
           
           zip -r 3105_binvippro.ipa Payload
-          echo "=> ĐÓNG GÓI IPA CHO MÁY THẬT THÀNH CÔNG!"
+          echo "=> ĐÓNG GÓI IPA CHUẨN ESIGN THÀNH CÔNG!"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
