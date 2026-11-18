@@ -1,0 +1,10 @@
+Build preparation only; no IPA has been compiled yet.
+
+Input: user-supplied 3105-main.zip, original source preserved.
+Added: scripts/build-unsigned.sh.
+CI workflow: ../3105-macos-build.yml.
+
+Proposed remote layout: place this entire project under 3105-build/ on a dedicated codex/3105-build branch. Place the workflow under .github/workflows/3105-macos-build.yml. It runs Xcode on macos-15-intel, disables signing, verifies an arm64 executable, and packages Payload/3105.app as an unsigned IPA. It uploads build logs even when compilation fails.
+
+No source has been uploaded and no GitHub Actions run has started.
+This is the supplied 3105 application, not a completed custom Free Fire patch. Exact target file paths and iOS payload compatibility remain unknown. The supplied project's README requires enterprise signing for its device access mechanism. ESign by itself does not establish that the signing certificate satisfies those requirements.

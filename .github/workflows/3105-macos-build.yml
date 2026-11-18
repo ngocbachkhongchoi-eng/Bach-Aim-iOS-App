@@ -1,0 +1,26 @@
+name: Build 3105 unsigned IPA
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/3105-build]
+    paths:
+      - '3105-build/**'
+      - '.github/workflows/3105-macos-build.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15-intel
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and package arm64 IPA without signing
+        run: bash 3105-build/scripts/build-unsigned.sh
+      - name: Upload IPA and build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: big-unsigned-ipa
+          path: 3105-build/artifacts/
+          if-no-files-found: warn
+          retention-days: 7
