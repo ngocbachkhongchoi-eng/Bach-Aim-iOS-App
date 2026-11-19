@@ -178,6 +178,7 @@ private struct BigVipGameView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }.disabled(working || ((!configured || selectedCache == nil) && receipt == nil))
+            Text("40% thì bật chức năng").font(.footnote.weight(.semibold)).foregroundStyle(AppTheme.accent)
             if working { ProgressView("Đang xử lý file…").frame(maxWidth: .infinity) }
             if receipt != nil {
                 Button("Khôi phục file gốc") { setAimEnabled(false) }
