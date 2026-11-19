@@ -182,6 +182,7 @@ private struct BigVipLoginView: View {
     @State private var password = ""
     @State private var accessKey = ""
     @State private var keyError = false
+    @State private var keyAccepted = false
     @State private var showSettings = false
     var body: some View {
         NavigationStack {
@@ -200,8 +201,9 @@ private struct BigVipLoginView: View {
                         SecureField(prefs.text("password"), text: $password)
                             .textContentType(.password).textFieldStyle(.roundedBorder)
                         Button {
-                            guard accessKey == "bigvip" else { keyError = true; return }
-                            keyError = false
+                            keyAccepted = accessKey == "bigvip"
+                            keyError = !keyAccepted
+                            guard keyAccepted else { return }
                             Task { await auth.signIn(username: username, password: password); if auth.user != nil { password = ""; accessKey = "" } }
                         } label: {
                             Group { if auth.busy { ProgressView() } else { Text(prefs.text("login")).bold() } }
@@ -212,7 +214,21 @@ private struct BigVipLoginView: View {
                             SecureField(prefs.text("enter_key"), text: $accessKey)
                                 .textInputAutocapitalization(.never).autocorrectionDisabled()
                                 .textFieldStyle(.roundedBorder)
-                                .onChange(of: accessKey) { _ in keyError = false }
+                                .onChange(of: accessKey) { _ in keyError = false; keyAccepted = false }
+                                .submitLabel(.go)
+                                .onSubmit { keyAccepted = accessKey == "bigvip"; keyError = !keyAccepted }
+                            Button {
+                                keyAccepted = accessKey == "bigvip"
+                                keyError = !keyAccepted
+                            } label: {
+                                Label(prefs.text("key_login"), systemImage: "key.fill")
+                                    .fontWeight(.semibold).frame(maxWidth: .infinity).padding(10)
+                            }
+                            .buttonStyle(.borderedProminent).disabled(accessKey.isEmpty || auth.busy)
+                            if keyAccepted {
+                                Label(prefs.text("key_accepted"), systemImage: "checkmark.circle.fill")
+                                    .font(.caption).foregroundStyle(.green)
+                            }
                             if keyError { Text(prefs.text("invalid_key")).font(.caption).foregroundStyle(.red) }
                         }
                         if !auth.message.isEmpty {
