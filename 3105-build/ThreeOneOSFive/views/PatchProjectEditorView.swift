@@ -288,6 +288,8 @@ struct PatchRuleEditorView: View {
     @State private var replacementFilename: String
     @State private var replacementData: Data
     @State private var showFileImporter = false
+    @State private var pendingFileSelection: Result<[URL], Error>?
+    @State private var importFailure: String?
     @State private var isImporting = false
     @State private var validationMessageKey: String?
 
@@ -318,6 +320,7 @@ struct PatchRuleEditorView: View {
                     Text(language.text("patch.bundle_not_uuid_footer"))
                 }
 
+                if let importFailure { Section { Text(importFailure).foregroundStyle(.red) } }
                 Section(language.text("patch.replacement_file")) {
                     Button {
                         showFileImporter = true
@@ -382,12 +385,14 @@ struct PatchRuleEditorView: View {
                         .disabled(isImporting)
                 }
             }
-            .sheet(isPresented: $showFileImporter) {
+            .sheet(isPresented: $showFileImporter, onDismiss: {
+                if let result = pendingFileSelection { pendingFileSelection = nil; importFile(result) }
+            }) {
                 FileDocumentPicker(
                     allowsMultipleSelection: false,
                     onSelection: { result in
+                        pendingFileSelection = result
                         showFileImporter = false
-                        importFile(result)
                     },
                     onCancel: {
                         showFileImporter = false
@@ -399,7 +404,9 @@ struct PatchRuleEditorView: View {
     }
 
     private func importFile(_ result: Result<[URL], Error>) {
-        guard case .success(let urls) = result, let url = urls.first else { return }
+        importFailure = nil
+        if case .failure(let error) = result { importFailure = error.localizedDescription; return }
+        guard case .success(let urls) = result, let url = urls.first else { importFailure = "Chưa nhận được file."; return }
         isImporting = true
         validationMessageKey = nil
         DispatchQueue.global(qos: .userInitiated).async {
@@ -427,7 +434,7 @@ struct PatchRuleEditorView: View {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    validationMessageKey = "patch.error.invalid_project"
+                    importFailure = error.localizedDescription
                     isImporting = false
                 }
             }

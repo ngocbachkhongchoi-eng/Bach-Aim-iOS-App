@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 private enum PatchPackagePickerPolicy {
     static let packageType = UTType(filenameExtension: "3105") ?? .data
-    static let allowedContentTypes: [UTType] = [packageType, .data]
+    static let allowedContentTypes: [UTType] = [.item]
     static let copiesSelectedDocument = true
 }
 
@@ -20,6 +20,8 @@ struct PatchProjectsView: View {
     @AppStorage(FeatureVisibility.cleanerStorageKey) private var cleanerEnabled = true
     @State private var showCreate = false
     @State private var showImporter = false
+    @State private var pendingPackageSelection: Result<[URL], Error>?
+    @State private var pickerFailure: String?
     @State private var showWallpaperImporter = false
     @State private var showCleaner = false
     @State private var searchText = ""
@@ -90,6 +92,20 @@ struct PatchProjectsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                if let feedback = store.alert {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(language.text(feedback.titleKey)).font(.headline)
+                            Text(feedback.message(language: language)).font(.footnote)
+                        }
+                        Spacer()
+                        Button { store.alert = nil } label: { Image(systemName: "xmark.circle.fill") }
+                    }.padding().background(AppTheme.accent.opacity(0.1))
+                }
+                if let pickerFailure {
+                    Text(pickerFailure).font(.footnote).foregroundStyle(.red).padding()
+                }
+                Text("Nhập .3105 chỉ nhận gói patch 3105. File cache thô dùng ở mục file thay thế khi tạo patch.").font(.caption).foregroundStyle(.secondary).padding(.horizontal)
                 AppSearchField(
                     text: $searchText,
                     prompt: language.text("installed.search"),
@@ -153,6 +169,7 @@ struct PatchProjectsView: View {
                 }
                 .listStyle(.insetGrouped)
             }
+            .patchStorePresentation(store)
             .navigationTitle(language.text("tab.installed"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -192,16 +209,14 @@ struct PatchProjectsView: View {
                     onOpenLogs: onOpenLogs
                 )
             }
-            .sheet(isPresented: $showImporter) {
+            .sheet(isPresented: $showImporter, onDismiss: consumePackageSelection) {
                 FileDocumentPicker(
                     allowedContentTypes: PatchPackagePickerPolicy.allowedContentTypes,
                     copiesSelectedDocument: PatchPackagePickerPolicy.copiesSelectedDocument,
                     allowsMultipleSelection: false,
                     onSelection: { result in
+                        pendingPackageSelection = result
                         showImporter = false
-                        if case .success(let urls) = result, let url = urls.first {
-                            store.importPackage(at: url)
-                        }
                     },
                     onCancel: {
                         showImporter = false
@@ -294,6 +309,17 @@ struct PatchProjectsView: View {
             .onChange(of: draftCoordinator.importRequest?.id) { _ in
                 consumeExternalImport()
             }
+        }
+    }
+
+    private func consumePackageSelection() {
+        guard let result = pendingPackageSelection else { return }
+        pendingPackageSelection = nil
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { pickerFailure = "Chưa nhận được file."; return }
+            store.importPackage(at: url)
+        case .failure(let error): pickerFailure = error.localizedDescription
         }
     }
 

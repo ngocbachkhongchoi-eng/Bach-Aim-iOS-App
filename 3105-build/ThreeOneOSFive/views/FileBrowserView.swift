@@ -1462,7 +1462,56 @@ struct FileDocumentPicker: UIViewControllerRepresentable {
             _ controller: UIDocumentPickerViewController,
             didPickDocumentsAt urls: [URL]
         ) {
-            onSelection(.success(urls))
+            guard !urls.isEmpty else {
+                onSelection(.failure(NSError(domain: "bigvip.import", code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Không nhận được file từ trình chọn."])))
+                return
+            }
+            // Stage provider URLs while access is available, before the picker is dismissed.
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let staged = try urls.map(Self.stageDocument)
+                    DispatchQueue.main.async { self.onSelection(.success(staged)) }
+                } catch {
+                    DispatchQueue.main.async { self.onSelection(.failure(error)) }
+                }
+            }
+        }
+
+        private static func stageDocument(_ source: URL) throws -> URL {
+            let scoped = source.startAccessingSecurityScopedResource()
+            defer { if scoped { source.stopAccessingSecurityScopedResource() } }
+            let directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent("bigvip-imports", isDirectory: true)
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let target = directory.appendingPathComponent(source.lastPathComponent)
+            var coordinationError: NSError?
+            var copyError: Error?
+            NSFileCoordinator(filePresenter: nil).coordinate(readingItemAt: source, options: [],
+                                           error: &coordinationError) { readable in
+                do {
+                    let values = try readable.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+                    guard values.isRegularFile == true, values.isSymbolicLink != true else {
+                        throw NSError(domain: "bigvip.import", code: 2,
+                            userInfo: [NSLocalizedDescriptionKey: "Hãy chọn một file, không chọn thư mục hoặc liên kết."])
+                    }
+                    try FileManager.default.copyItem(at: readable, to: target)
+                } catch { copyError = error }
+            }
+            if let error = coordinationError {
+                try? FileManager.default.removeItem(at: directory)
+                throw error
+            }
+            if let error = copyError {
+                try? FileManager.default.removeItem(at: directory)
+                throw error
+            }
+            guard FileManager.default.fileExists(atPath: target.path) else {
+                throw NSError(domain: "bigvip.import", code: 3,
+                    userInfo: [NSLocalizedDescriptionKey: "Không sao chép được file. Hãy tải file về ứng dụng Tệp rồi thử lại."])
+            }
+            return target
         }
 
         func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {

@@ -28,6 +28,10 @@ struct PatchRestoreInspection: Equatable {
 }
 
 enum PatchTransaction {
+    static func isApplied(receipt: PatchTransactionReceipt) -> Bool {
+        guard let journal = try? readJournal(receipt.journalURL) else { return false }
+        return journal.status == .applied && journal.projectID == receipt.projectID
+    }
     private enum Status: String, Codable {
         case prepared
         case applied
