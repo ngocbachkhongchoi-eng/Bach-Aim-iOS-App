@@ -4,8 +4,8 @@ enum AppTheme {
     static let accent = Color(
         uiColor: UIColor { traits in
             traits.userInterfaceStyle == .dark
-                ? UIColor(red: 1.00, green: 0.64, blue: 0.42, alpha: 1.00)
-                : UIColor(red: 0.85, green: 0.42, blue: 0.20, alpha: 1.00)
+                ? UIColor(red: 0.35, green: 0.70, blue: 1.00, alpha: 1.00)
+                : UIColor(red: 0.05, green: 0.40, blue: 0.90, alpha: 1.00)
         }
     )
     static let pageBackground = Color(uiColor: .systemBackground)

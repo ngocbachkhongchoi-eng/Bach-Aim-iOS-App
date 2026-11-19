@@ -15,6 +15,7 @@ xcodebuild -project ThreeOneOSFive.xcodeproj -target 3105 \
   build 2>&1 | tee artifacts/build.log
 app="$build_root/products/Release-iphoneos/3105.app"
 test -d "$app"
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "$app/Info.plist")" = bigvip
 executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")"
 test -f "$app/$executable"
 xcrun lipo "$app/$executable" -verify_arch arm64
