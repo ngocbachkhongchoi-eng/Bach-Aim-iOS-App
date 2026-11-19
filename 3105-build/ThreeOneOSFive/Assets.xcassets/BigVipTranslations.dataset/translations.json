@@ -56,7 +56,10 @@
     "not_found": "Thao tác thất bại. Kiểm tra thông tin rồi thử lại.",
     "invalid_json": "Thao tác thất bại. Kiểm tra thông tin rồi thử lại.",
     "body_too_large": "Thao tác thất bại. Kiểm tra thông tin rồi thử lại.",
-    "json_required": "Thao tác thất bại. Kiểm tra thông tin rồi thử lại."
+    "json_required": "Thao tác thất bại. Kiểm tra thông tin rồi thử lại.",
+    "access_key": "Key truy cập",
+    "enter_key": "Nhập key",
+    "invalid_key": "Key không đúng."
   },
   "en": {
     "login": "Sign in",
@@ -115,7 +118,10 @@
     "not_found": "Operation failed. Check your details and try again.",
     "invalid_json": "Operation failed. Check your details and try again.",
     "body_too_large": "Operation failed. Check your details and try again.",
-    "json_required": "Operation failed. Check your details and try again."
+    "json_required": "Operation failed. Check your details and try again.",
+    "access_key": "Access key",
+    "enter_key": "Enter key",
+    "invalid_key": "Incorrect key."
   },
   "zh": {
     "login": "登录",
@@ -174,7 +180,10 @@
     "not_found": "操作失败，请检查信息后重试。",
     "invalid_json": "操作失败，请检查信息后重试。",
     "body_too_large": "操作失败，请检查信息后重试。",
-    "json_required": "操作失败，请检查信息后重试。"
+    "json_required": "操作失败，请检查信息后重试。",
+    "access_key": "访问密钥",
+    "enter_key": "输入密钥",
+    "invalid_key": "密钥不正确。"
   },
   "th": {
     "login": "เข้าสู่ระบบ",
@@ -233,7 +242,10 @@
     "not_found": "ดำเนินการไม่สำเร็จ โปรดตรวจสอบแล้วลองใหม่",
     "invalid_json": "ดำเนินการไม่สำเร็จ โปรดตรวจสอบแล้วลองใหม่",
     "body_too_large": "ดำเนินการไม่สำเร็จ โปรดตรวจสอบแล้วลองใหม่",
-    "json_required": "ดำเนินการไม่สำเร็จ โปรดตรวจสอบแล้วลองใหม่"
+    "json_required": "ดำเนินการไม่สำเร็จ โปรดตรวจสอบแล้วลองใหม่",
+    "access_key": "คีย์เข้าใช้งาน",
+    "enter_key": "กรอกคีย์",
+    "invalid_key": "คีย์ไม่ถูกต้อง"
   },
   "ja": {
     "login": "ログイン",
@@ -292,7 +304,10 @@
     "not_found": "処理に失敗しました。内容を確認して再試行してください。",
     "invalid_json": "処理に失敗しました。内容を確認して再試行してください。",
     "body_too_large": "処理に失敗しました。内容を確認して再試行してください。",
-    "json_required": "処理に失敗しました。内容を確認して再試行してください。"
+    "json_required": "処理に失敗しました。内容を確認して再試行してください。",
+    "access_key": "アクセスキー",
+    "enter_key": "キーを入力",
+    "invalid_key": "キーが違います。"
   },
   "ko": {
     "login": "로그인",
@@ -351,7 +366,10 @@
     "not_found": "작업이 실패했습니다. 내용을 확인하고 다시 시도하세요.",
     "invalid_json": "작업이 실패했습니다. 내용을 확인하고 다시 시도하세요.",
     "body_too_large": "작업이 실패했습니다. 내용을 확인하고 다시 시도하세요.",
-    "json_required": "작업이 실패했습니다. 내용을 확인하고 다시 시도하세요."
+    "json_required": "작업이 실패했습니다. 내용을 확인하고 다시 시도하세요.",
+    "access_key": "접속 키",
+    "enter_key": "키 입력",
+    "invalid_key": "키가 올바르지 않습니다."
   },
   "es": {
     "login": "Iniciar sesión",
@@ -410,7 +428,10 @@
     "not_found": "Operación fallida. Revisa los datos e inténtalo de nuevo.",
     "invalid_json": "Operación fallida. Revisa los datos e inténtalo de nuevo.",
     "body_too_large": "Operación fallida. Revisa los datos e inténtalo de nuevo.",
-    "json_required": "Operación fallida. Revisa los datos e inténtalo de nuevo."
+    "json_required": "Operación fallida. Revisa los datos e inténtalo de nuevo.",
+    "access_key": "Clave de acceso",
+    "enter_key": "Introduce la clave",
+    "invalid_key": "Clave incorrecta."
   },
   "fr": {
     "login": "Connexion",
@@ -469,7 +490,10 @@
     "not_found": "Échec. Vérifiez les informations et réessayez.",
     "invalid_json": "Échec. Vérifiez les informations et réessayez.",
     "body_too_large": "Échec. Vérifiez les informations et réessayez.",
-    "json_required": "Échec. Vérifiez les informations et réessayez."
+    "json_required": "Échec. Vérifiez les informations et réessayez.",
+    "access_key": "Clé d’accès",
+    "enter_key": "Saisissez la clé",
+    "invalid_key": "Clé incorrecte."
   },
   "de": {
     "login": "Anmelden",
@@ -528,7 +552,10 @@
     "not_found": "Vorgang fehlgeschlagen. Angaben prüfen und erneut versuchen.",
     "invalid_json": "Vorgang fehlgeschlagen. Angaben prüfen und erneut versuchen.",
     "body_too_large": "Vorgang fehlgeschlagen. Angaben prüfen und erneut versuchen.",
-    "json_required": "Vorgang fehlgeschlagen. Angaben prüfen und erneut versuchen."
+    "json_required": "Vorgang fehlgeschlagen. Angaben prüfen und erneut versuchen.",
+    "access_key": "Zugangsschlüssel",
+    "enter_key": "Schlüssel eingeben",
+    "invalid_key": "Falscher Schlüssel."
   },
   "id": {
     "login": "Masuk",
@@ -587,6 +614,9 @@
     "not_found": "Operasi gagal. Periksa data lalu coba lagi.",
     "invalid_json": "Operasi gagal. Periksa data lalu coba lagi.",
     "body_too_large": "Operasi gagal. Periksa data lalu coba lagi.",
-    "json_required": "Operasi gagal. Periksa data lalu coba lagi."
+    "json_required": "Operasi gagal. Periksa data lalu coba lagi.",
+    "access_key": "Kunci akses",
+    "enter_key": "Masukkan kunci",
+    "invalid_key": "Kunci salah."
   }
 }

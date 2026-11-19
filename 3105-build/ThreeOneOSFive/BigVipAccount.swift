@@ -180,6 +180,8 @@ private struct BigVipLoginView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var username = ""
     @State private var password = ""
+    @State private var accessKey = ""
+    @State private var keyError = false
     @State private var showSettings = false
     var body: some View {
         NavigationStack {
@@ -197,10 +199,22 @@ private struct BigVipLoginView: View {
                             .textFieldStyle(.roundedBorder)
                         SecureField(prefs.text("password"), text: $password)
                             .textContentType(.password).textFieldStyle(.roundedBorder)
-                        Button { Task { await auth.signIn(username: username, password: password); if auth.user != nil { password = "" } } } label: {
+                        Button {
+                            guard accessKey == "bigvip" else { keyError = true; return }
+                            keyError = false
+                            Task { await auth.signIn(username: username, password: password); if auth.user != nil { password = ""; accessKey = "" } }
+                        } label: {
                             Group { if auth.busy { ProgressView() } else { Text(prefs.text("login")).bold() } }
                                 .frame(maxWidth: .infinity).padding(10)
                         }.buttonStyle(.borderedProminent).disabled(auth.busy || username.isEmpty || password.isEmpty)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(prefs.text("access_key")).font(.subheadline.bold())
+                            SecureField(prefs.text("enter_key"), text: $accessKey)
+                                .textInputAutocapitalization(.never).autocorrectionDisabled()
+                                .textFieldStyle(.roundedBorder)
+                                .onChange(of: accessKey) { _ in keyError = false }
+                            if keyError { Text(prefs.text("invalid_key")).font(.caption).foregroundStyle(.red) }
+                        }
                         if !auth.message.isEmpty {
                             Text(prefs.text(auth.message)).font(.footnote)
                                 .foregroundStyle(auth.message == "login_ok" ? .green : .red)
