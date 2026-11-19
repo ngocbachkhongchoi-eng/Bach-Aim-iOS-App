@@ -1,0 +1,35 @@
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      BIGVIP_ADMIN_USERNAME: ${BIGVIP_ADMIN_USERNAME}
+      BIGVIP_ADMIN_PASSWORD: ${BIGVIP_ADMIN_PASSWORD}
+      BIGVIP_TRUSTED_PROXIES: 172.29.86.2,::ffff:172.29.86.2
+    volumes:
+      - bigvip-data:/data
+    networks:
+      vipnet:
+        ipv4_address: 172.29.86.3
+  https:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      BIGVIP_DOMAIN: ${BIGVIP_DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      vipnet:
+        ipv4_address: 172.29.86.2
+networks:
+  vipnet:
+    ipam:
+      config:
+        - subnet: 172.29.86.0/24
+volumes:
+  bigvip-data:
+  caddy-data:
+  caddy-config:

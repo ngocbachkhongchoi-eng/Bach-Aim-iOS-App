@@ -12,6 +12,9 @@ private struct BigVipGame: Identifiable, Hashable {
 
 struct ContentView: View {
     @EnvironmentObject private var drafts: PatchDraftCoordinator
+    @EnvironmentObject private var auth: BigVipAuth
+    @EnvironmentObject private var prefs: BigVipPreferences
+    @State private var mainTab = 0
     @State private var showPatches = false
     @State private var showFiles = false
     @State private var showSettings = false
@@ -19,14 +22,27 @@ struct ContentView: View {
     @State private var filesSession = FilesTabSession()
 
     var body: some View {
+        TabView(selection: $mainTab) {
+            homePage.tabItem { Label(prefs.text("home"), systemImage: "house.fill") }.tag(0)
+            if auth.isAdmin {
+                NavigationStack { BigVipAdminView() }
+                    .tabItem { Label("Admin", systemImage: "person.badge.key.fill") }.tag(1)
+            }
+            BigVipAccountSettings(isPresentedAsTab: true).tabItem { Label(prefs.text("settings"), systemImage: "gearshape") }.tag(2)
+        }.tint(prefs.accent)
+    }
+
+    private var homePage: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     Image("BigVipLogo").resizable().scaledToFit()
                         .frame(maxWidth: 300).frame(maxWidth: .infinity)
                         .clipShape(RoundedRectangle(cornerRadius: 28))
-                    Text("CHỌN PHIÊN BẢN").font(.caption.weight(.bold)).tracking(2)
+                        .shadow(color: prefs.accent.opacity(0.35), radius: 18, y: 10)
+                    Text(prefs.text("choose_game")).font(.caption.weight(.bold)).tracking(2)
                         .foregroundStyle(.secondary)
+                    Text(prefs.text("login_ok") + " · IP: " + auth.ip).font(.caption).foregroundStyle(.secondary)
                     ForEach(BigVipGame.games) { game in
                         NavigationLink {
                             BigVipGameView(game: game, onBrowse: { showFiles = true })
@@ -42,13 +58,13 @@ struct ContentView: View {
                                 Image(systemName: "arrow.up.right")
                             }
                             .foregroundStyle(.white).padding(24)
-                            .background(LinearGradient(colors: [.blue, Color(red: 0.02, green: 0.2, blue: 0.5)],
+                            .background(LinearGradient(colors: [prefs.accent, prefs.accent.opacity(0.45)],
                                                        startPoint: .topLeading, endPoint: .bottomTrailing))
                             .clipShape(RoundedRectangle(cornerRadius: 24))
                         }.buttonStyle(.plain)
                     }
                     Button { showPatches = true } label: {
-                        Label("Quản lý patch & file", systemImage: "folder.badge.gearshape")
+                        Label(prefs.text("patch_manager"), systemImage: "folder.badge.gearshape")
                             .frame(maxWidth: .infinity).padding(12)
                     }.buttonStyle(.bordered)
                 }.padding(22)
@@ -71,7 +87,7 @@ struct ContentView: View {
         .sheet(isPresented: $showFiles, onDismiss: presentPendingDraft) {
             AppDataBrowserView(tabSession: $filesSession).bigVipCloseButton()
         }
-        .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showSettings) { BigVipAccountSettings() }
         .sheet(isPresented: $showLogs) { LogView() }
         .onChange(of: drafts.request?.id) { _ in routeDraft() }
         .onChange(of: drafts.importRequest?.id) { _ in routeDraft() }
@@ -106,6 +122,7 @@ private struct BigVipGameView: View {
     let game: BigVipGame
     let onBrowse: () -> Void
     @Environment(\.appLanguage) private var language
+    @EnvironmentObject private var auth: BigVipAuth
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab = 0
     @State private var targetPath = ""
@@ -135,6 +152,7 @@ private struct BigVipGameView: View {
         .navigationTitle(game.title)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: loadConfiguration)
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BigVipAimTargetSelected"))) { _ in loadConfiguration() }
         .onChange(of: scenePhase) { phase in if phase == .active { refreshReceipt() } }
         .alert("bigvip", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
             Button("Đóng", role: .cancel) { notice = nil }
@@ -225,6 +243,22 @@ private struct BigVipGameView: View {
     }
 
     private func setAimEnabled(_ enabled: Bool) {
+        guard !working else { return }
+        if !enabled { applyAimChange(false); return }
+        working = true
+        Task {
+            do {
+                try await auth.requireActive()
+                working = false
+                applyAimChange(true)
+            } catch {
+                working = false
+                notice = "Không xác minh được thời hạn sử dụng trên máy chủ."
+            }
+        }
+    }
+
+    private func applyAimChange(_ enabled: Bool) {
         guard !working else { return }
         if !enabled {
             guard let receipt else { applied = false; return }

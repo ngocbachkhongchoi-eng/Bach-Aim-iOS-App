@@ -429,6 +429,12 @@ struct FileBrowserView: View {
 
     @ViewBuilder
     private func fileActions(for entry: FileEntry) -> some View {
+        if !entry.isDirectory, let bundleID,
+           ["com.dts.freefireth", "com.dts.freefiremax"].contains(bundleID) {
+            Button { selectAimTarget(entry, bundleID: bundleID) } label: {
+                Label("Chọn làm file cache Aim Neck", systemImage: "scope")
+            }
+        }
         if entry.isDirectory, filesTabSession != nil {
             Button {
                 openDirectoryInNewTab(entry)
@@ -496,6 +502,23 @@ struct FileBrowserView: View {
         } label: {
             Label(language.text("browser.delete"), systemImage: "trash")
         }
+    }
+
+    private func selectAimTarget(_ entry: FileEntry, bundleID: String) {
+        let key = "bigvip.aimNeck." + bundleID
+        if let stored = UserDefaults.standard.string(forKey: key + ".id"),
+           let id = UUID(uuidString: stored),
+           DevicePatchService.latestReceipt(projectID: id) != nil {
+            operationNotice = FileReplacementNotice(title: "Aim Neck", message: "Khôi phục bản patch hiện tại trước khi đổi file đích.")
+            return
+        }
+        let root = URL(fileURLWithPath: containerPath).standardizedFileURL.path + "/"
+        let target = URL(fileURLWithPath: entry.path).standardizedFileURL.path
+        guard target.hasPrefix(root),
+              let path = try? PatchPathValidator.canonicalRelativePath(String(target.dropFirst(root.count))) else { return }
+        UserDefaults.standard.set(path, forKey: key + ".path")
+        NotificationCenter.default.post(name: Notification.Name("BigVipAimTargetSelected"), object: nil)
+        operationNotice = FileReplacementNotice(title: "Aim Neck", message: "Đã lưu file đích. Đóng trình duyệt file và bật Aim Neck.")
     }
 
     private func openDirectoryInNewTab(_ entry: FileEntry) {
