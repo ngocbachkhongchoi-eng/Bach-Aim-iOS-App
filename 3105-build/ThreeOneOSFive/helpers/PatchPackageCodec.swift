@@ -167,7 +167,7 @@ enum PatchPackageCodec {
             return try decode(envelope: envelope, contentKey: contentKey)
         } catch let error as PatchPackageError {
             switch error {
-            case .unsupportedFormat, .unsupportedVersion, .sizeLimitExceeded:
+            case .unsupportedFormat, .unsupportedVersion, .unsupportedSchema, .sizeLimitExceeded:
                 throw error
             default:
                 throw PatchPackageError.invalidPasswordOrCorruptedPackage
@@ -183,7 +183,7 @@ enum PatchPackageCodec {
             return try decode(envelope: envelope, contentKey: contentKey)
         } catch let error as PatchPackageError {
             switch error {
-            case .unsupportedFormat, .unsupportedVersion, .sizeLimitExceeded:
+            case .unsupportedFormat, .unsupportedVersion, .unsupportedSchema, .sizeLimitExceeded:
                 throw error
             default:
                 throw PatchPackageError.invalidPasswordOrCorruptedPackage
@@ -380,7 +380,7 @@ enum PatchPackageCodec {
             throw PatchPackageError.invalidPasswordOrCorruptedPackage
         }
         guard (minimumSchemaVersion...latestSchemaVersion).contains(envelope.schemaVersion) else {
-            throw PatchPackageError.unsupportedVersion
+            throw PatchPackageError.unsupportedSchema(envelope.schemaVersion)
         }
         guard envelope.keyFingerprint.count == 32,
               envelope.encryptedPayload.count >= 28

@@ -171,6 +171,7 @@ struct DecodedPatchPackage {
 enum PatchPackageError: Error, Equatable {
     case unsupportedFormat
     case unsupportedVersion
+    case unsupportedSchema(Int)
     case invalidPasswordOrCorruptedPackage
     case invalidBundleIdentifier
     case unsafeTargetPath
@@ -198,6 +199,7 @@ extension PatchPackageError: LocalizedError {
         switch self {
         case .unsupportedFormat: return "patch.error.unsupported_format"
         case .unsupportedVersion: return "patch.error.unsupported_version"
+        case .unsupportedSchema: return "patch.error.unsupported_schema"
         case .invalidPasswordOrCorruptedPackage: return "patch.error.password_or_corrupt"
         case .invalidBundleIdentifier: return "patch.error.invalid_bundle"
         case .unsafeTargetPath: return "patch.error.unsafe_path"
@@ -231,6 +233,7 @@ extension PatchPackageError: LocalizedError {
 
     var localizationArgument: String? {
         switch self {
+        case .unsupportedSchema(let version): return String(version)
         case .targetAppUnavailable(let bundleID), .targetOccupied(let bundleID):
             return bundleID
         case .restoreTargetsChanged(let paths):

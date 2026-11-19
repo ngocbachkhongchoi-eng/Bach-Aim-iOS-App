@@ -133,6 +133,9 @@ private struct BigVipGameView: View {
     @State private var configured = false
     @State private var notice: String?
     @State private var lastAction = ""
+    @State private var selectedCache: BigVipCacheFile?
+    @State private var showCacheImporter = false
+    @State private var pendingCacheSelection: Result<[URL], Error>?
 
     private var key: String { "bigvip.aimNeck." + game.id }
 
@@ -151,6 +154,11 @@ private struct BigVipGameView: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle(game.title)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showCacheImporter, onDismiss: consumeCacheSelection) {
+            FileDocumentPicker(allowsMultipleSelection: false,
+                onSelection: { result in pendingCacheSelection = result; showCacheImporter = false },
+                onCancel: { showCacheImporter = false })
+        }
         .onAppear(perform: loadConfiguration)
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BigVipAimTargetSelected"))) { _ in loadConfiguration() }
         .onChange(of: scenePhase) { phase in if phase == .active { refreshReceipt() } }
@@ -161,15 +169,15 @@ private struct BigVipGameView: View {
 
     private var aimPanel: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Label("AIM NECK", systemImage: "scope")
+            Label("AIM CACHE", systemImage: "scope")
                 .font(.title2.weight(.heavy)).foregroundStyle(AppTheme.accent)
             Toggle(isOn: Binding(get: { applied }, set: setAimEnabled)) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Aim Neck").font(.headline)
-                    Text(applied ? "Đã áp dụng file" : (configured ? "Sẵn sàng áp dụng" : "Cần chọn file cache đích"))
+                    Text("Bật file cache").font(.headline)
+                    Text(applied ? "Đã áp dụng file" : (selectedCache == nil ? "Chưa nhập file cache" : (configured ? "Sẵn sàng áp dụng" : "Cần chọn file cache đích")))
                         .font(.caption).foregroundStyle(.secondary)
                 }
-            }.disabled(working || (!configured && receipt == nil))
+            }.disabled(working || ((!configured || selectedCache == nil) && receipt == nil))
             if working { ProgressView("Đang xử lý file…").frame(maxWidth: .infinity) }
             if receipt != nil {
                 Button("Khôi phục file gốc") { setAimEnabled(false) }
@@ -178,6 +186,17 @@ private struct BigVipGameView: View {
             if !lastAction.isEmpty {
                 Label(lastAction, systemImage: "clock").font(.caption).foregroundStyle(.secondary)
             }
+            Divider()
+            Text("File cache của bạn").font(.headline)
+            if let cache = selectedCache {
+                Label(cache.filename, systemImage: "doc.fill").font(.subheadline)
+                Text(ByteCountFormatter.string(fromByteCount: Int64(cache.data.count), countStyle: .file))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Button(selectedCache == nil ? "Nhập file cache" : "Đổi file cache") { showCacheImporter = true }
+                .buttonStyle(.borderedProminent).disabled(working || receipt != nil)
+            Text("Nhận tên cache… hoặc đuôi .cache, tối đa 64 MB. Khôi phục file gốc trước khi đổi sang cache khác.")
+                .font(.caption).foregroundStyle(.secondary)
             Divider()
             Text("File cache đích").font(.headline)
             TextField("Đường dẫn trong dữ liệu game, gồm tên file", text: $targetPath, axis: .vertical)
@@ -193,9 +212,9 @@ private struct BigVipGameView: View {
                 Button("Duyệt file", action: onBrowse)
                     .buttonStyle(.bordered).disabled(working)
             }
-            Text("Thiết lập đúng đường dẫn một lần. Bật để thay file bằng dữ liệu đã gửi; tắt để khôi phục bản sao gốc. Đóng game trước khi thao tác.")
+            Text("Chọn file cache của bạn và đúng file đích trong game. Bật để áp dụng; tắt để khôi phục bản sao gốc. Đóng game trước khi thao tác.")
                 .font(.footnote).foregroundStyle(.secondary)
-            Text("File thay thế đã kèm theo app. Hiệu quả Aim Neck trong game chưa được kiểm chứng.")
+            Text("Hiệu quả trong game phụ thuộc nội dung và độ tương thích của file cache; chưa được kiểm chứng trên thiết bị.")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(22).background(Color(uiColor: .secondarySystemGroupedBackground))
@@ -223,7 +242,30 @@ private struct BigVipGameView: View {
         }
         targetPath = UserDefaults.standard.string(forKey: key + ".path") ?? ""
         configured = !targetPath.isEmpty
+        selectedCache = BigVipCacheFile.load(bundleID: game.id)
         refreshReceipt()
+    }
+
+    private func consumeCacheSelection() {
+        guard let result = pendingCacheSelection else { return }
+        pendingCacheSelection = nil
+        guard receipt == nil, !working else { return }
+        switch result {
+        case .failure(let error): notice = error.localizedDescription
+        case .success(let urls):
+            guard let url = urls.first else { notice = "Chưa chọn file cache."; return }
+            working = true
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let cache = try BigVipCacheFile.readSource(url)
+                    try cache.save(bundleID: game.id)
+                    DispatchQueue.main.async {
+                        selectedCache = cache; working = false
+                        lastAction = "Đã nhập cache; chưa thay file trong game"
+                    }
+                } catch { finishWithError(error) }
+            }
+        }
     }
 
     private func refreshReceipt() {
@@ -274,15 +316,14 @@ private struct BigVipGameView: View {
             }
             return
         }
-        guard configured, receipt == nil,
-              let payload = NSDataAsset(name: "AimNeckPayload")?.data else {
+        guard configured, receipt == nil, let cache = selectedCache else {
             notice = "Cần cấu hình file đích và khôi phục bản patch cũ trước khi bật."
             return
         }
-        let project = PatchProject(id: projectID, name: "Aim Neck • " + game.title,
+        let project = PatchProject(id: projectID, name: "Aim Cache • " + game.title,
                                    bundleIdentifiers: [game.id],
                                    rules: [PatchRule(bundleID: game.id, relativePath: targetPath,
-                                                     replacementFilename: "cache_res", replacementData: payload)])
+                                                     replacementFilename: cache.filename, replacementData: cache.data)])
         working = true
         DispatchQueue.global(qos: .userInitiated).async {
             do {
@@ -318,5 +359,60 @@ private struct BigVipGameView: View {
             }
             lastAction = "Thao tác chưa hoàn tất — xem thông báo"
         }
+    }
+}
+
+struct BigVipCacheFile: Codable {
+    let filename: String
+    let data: Data
+    static let maximumBytes = 64 * 1024 * 1024
+
+    static func acceptsFilename(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        return lower.hasPrefix("cache") || lower.hasSuffix(".cache")
+    }
+
+    static func readSource(_ source: URL) throws -> BigVipCacheFile {
+        guard acceptsFilename(source.lastPathComponent) else {
+            throw NSError(domain: "bigvip.cache", code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Chỉ nhận file có tên bắt đầu bằng cache hoặc đuôi .cache. Gói .3105 nhập ở mục Quản lý patch."])
+        }
+        let values = try source.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+        guard values.isRegularFile == true, values.isSymbolicLink != true,
+              let size = values.fileSize, size > 0, size <= maximumBytes else {
+            throw NSError(domain: "bigvip.cache", code: 2,
+                userInfo: [NSLocalizedDescriptionKey: "Cần một file cache không rỗng, tối đa 64 MB."])
+        }
+        let data = try Data(contentsOf: source)
+        guard !data.isEmpty, data.count <= maximumBytes,
+              !data.starts(with: Data("3105PATCH\0".utf8)) else {
+            throw NSError(domain: "bigvip.cache", code: 3,
+                userInfo: [NSLocalizedDescriptionKey: "Đây không phải file cache thô hợp lệ. Không đổi tên gói .3105 thành file cache."])
+        }
+        return BigVipCacheFile(filename: source.lastPathComponent, data: data)
+    }
+
+    private static func location(bundleID: String) throws -> URL {
+        let bundle = try PatchPathValidator.canonicalBundleIdentifier(bundleID)
+        let root = try FileManager.default.url(for: .applicationSupportDirectory,
+            in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("BigVipCache", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        return root.appendingPathComponent(bundle + ".plist")
+    }
+
+    func save(bundleID: String) throws {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        try encoder.encode(self).write(to: Self.location(bundleID: bundleID), options: .atomic)
+    }
+
+    static func load(bundleID: String) -> BigVipCacheFile? {
+        guard let url = try? location(bundleID: bundleID),
+              let data = try? Data(contentsOf: url),
+              let cache = try? PropertyListDecoder().decode(Self.self, from: data),
+              acceptsFilename(cache.filename), !cache.data.isEmpty,
+              cache.data.count <= maximumBytes else { return nil }
+        return cache
     }
 }

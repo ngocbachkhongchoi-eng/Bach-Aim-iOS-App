@@ -211,7 +211,7 @@
 "patch.restored_message" = "原始文件已恢复。";
 "patch.reset_message" = "所有补丁文件已重置为应用时的软件包状态。";
 "patch.error.unsupported_format" = "这不是有效的 .3105 补丁软件包。";
-"patch.error.unsupported_version" = "此补丁需要更高版本的 3105。请更新应用后再导入。";
+"patch.error.unsupported_version" = "尚不支持此补丁格式。原始缓存文件请在 Aim 中导入；.3105 需要受支持的结构。";
 "patch.error.password_or_corrupt" = "密码不正确，或软件包已被修改。";
 "patch.error.invalid_bundle" = "请输入有效的应用 bundle identifier，而不是容器 UUID。";
 "patch.error.unsafe_path" = "目标必须是应用数据容器内的安全相对路径。";
@@ -667,3 +667,5 @@
 "settings.developer_mode_footer" = "开发者模式会在主导航中添加“文件”。“文件”可以浏览和修改应用容器。";
 "wallpaper.package_details" = "软件包详情";
 "wallpaper.package_files" = "%lld 个文件";
+
+"patch.error.unsupported_schema" = "此 .3105 使用格式 %@；当前读取器支持 1–3。未导入或修改游戏文件，需要兼容的读取器。";

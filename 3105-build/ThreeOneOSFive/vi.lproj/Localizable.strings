@@ -211,7 +211,7 @@
 "patch.restored_message" = "Đã khôi phục các file gốc.";
 "patch.reset_message" = "Đã đặt lại mọi file về trạng thái của gói lúc Apply.";
 "patch.error.unsupported_format" = "Đây không phải là gói patch .3105 hợp lệ.";
-"patch.error.unsupported_version" = "Patch này yêu cầu phiên bản 3105 mới hơn. Hãy cập nhật ứng dụng trước khi nhập.";
+"patch.error.unsupported_version" = "Định dạng patch chưa được hỗ trợ. File cache thô hãy nhập ở tab Aim; gói .3105 cần đúng cấu trúc được hỗ trợ.";
 "patch.error.password_or_corrupt" = "Mật khẩu sai hoặc gói đã bị chỉnh sửa.";
 "patch.error.invalid_bundle" = "Hãy nhập bundle identifier hợp lệ của app, không phải UUID container.";
 "patch.error.unsafe_path" = "Đích phải là đường dẫn tương đối an toàn bên trong data container của app.";
@@ -667,3 +667,5 @@
 "settings.developer_mode_footer" = "Chế độ nhà phát triển thêm mục Tệp vào thanh điều hướng chính. Tệp có thể duyệt và chỉnh sửa container ứng dụng.";
 "wallpaper.package_details" = "Chi tiết gói";
 "wallpaper.package_files" = "%lld tệp";
+
+"patch.error.unsupported_schema" = "Gói .3105 dùng định dạng %@; bộ đọc hiện hỗ trợ 1–3. Chưa nhập hoặc thay file. Cần kiểm tra file gói này để bổ sung bộ đọc tương thích.";

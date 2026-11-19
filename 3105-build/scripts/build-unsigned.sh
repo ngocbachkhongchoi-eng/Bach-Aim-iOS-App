@@ -9,6 +9,7 @@ build_root="$(mktemp -d "${TMPDIR:-/tmp}/3105-build.XXXXXX")"
 mkdir -p artifacts "$build_root/package/Payload"
 xcodebuild -version
 python3 scripts/test-document-import.py
+python3 scripts/test-cache-import.py
 sips -z 1024 1024 ThreeOneOSFive/Assets.xcassets/BigVipLogo.imageset/Logo.png --out ThreeOneOSFive/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
 xcodebuild -project ThreeOneOSFive.xcodeproj -target 3105 \
   -configuration Release -sdk iphoneos -arch arm64 \

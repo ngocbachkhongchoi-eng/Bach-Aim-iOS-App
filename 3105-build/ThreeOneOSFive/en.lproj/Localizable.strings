@@ -211,7 +211,7 @@
 "patch.restored_message" = "The original files were restored.";
 "patch.reset_message" = "All patch files were reset to the applied package state.";
 "patch.error.unsupported_format" = "This is not a valid .3105 patch package.";
-"patch.error.unsupported_version" = "This patch requires a newer version of 3105. Update the app before importing it.";
+"patch.error.unsupported_version" = "Unsupported patch format. Import raw cache files in Aim; .3105 packages need a supported structure.";
 "patch.error.password_or_corrupt" = "The password is incorrect or the package was modified.";
 "patch.error.invalid_bundle" = "Enter a valid app bundle identifier, not a container UUID.";
 "patch.error.unsafe_path" = "The target must be a safe path relative to the app data container.";
@@ -667,3 +667,5 @@
 "settings.developer_mode_footer" = "Developer Mode adds Files to the main navigation. Files can browse and modify application containers.";
 "wallpaper.package_details" = "Package Details";
 "wallpaper.package_files" = "%lld files";
+
+"patch.error.unsupported_schema" = "This .3105 package uses schema %@; the reader supports 1–3. No package was imported or game file changed. This package needs a compatible reader.";
