@@ -17,7 +17,7 @@ app="$build_root/products/Release-iphoneos/3105.app"
 test -d "$app"
 executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")"
 test -f "$app/$executable"
-xcrun lipo -verify_arch arm64 "$app/$executable"
+xcrun lipo "$app/$executable" -verify_arch arm64
 ditto "$app" "$build_root/package/Payload/3105.app"
 ditto -c -k --keepParent "$build_root/package/Payload" artifacts/big.ipa
 unzip -t artifacts/big.ipa
