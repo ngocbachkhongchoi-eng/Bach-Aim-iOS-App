@@ -61,7 +61,41 @@
     "enter_key": "Nhập key",
     "invalid_key": "Key không đúng.",
     "key_login": "Đăng nhập key",
-    "key_accepted": "Key đúng. Tiếp tục đăng nhập tài khoản ở trên."
+    "key_accepted": "Đang vào sảnh…",
+    "key_mode": "Chế độ key • không cần server",
+    "display_mode": "Chế độ giao diện",
+    "system": "Theo hệ thống",
+    "light": "Sáng",
+    "dark": "Tối",
+    "text_size": "Cỡ chữ",
+    "large": "Lớn",
+    "extra_large": "Rất lớn",
+    "high_contrast": "Viền tương phản cao",
+    "interaction": "Nút và tương tác",
+    "large_buttons": "Nút lớn, dễ bấm",
+    "haptics": "Rung phản hồi",
+    "reduce_motion": "Giảm hiệu ứng chuyển động",
+    "show_hints": "Hiện hướng dẫn nhập file",
+    "show_game_id": "Hiện mã gói game",
+    "preview_button": "Thử nút và rung phản hồi",
+    "files_and_patch": "File và patch",
+    "show_file_size": "Hiện dung lượng file",
+    "confirm_patch": "Xác nhận trước khi áp dụng",
+    "app_information": "Thông tin ứng dụng",
+    "version": "Phiên bản",
+    "stored_files": "Dung lượng file đã nhập",
+    "logs": "Nhật ký",
+    "share_info": "Chia sẻ thông tin kiểm tra",
+    "reset_preferences": "Đặt lại tùy chỉnh giao diện",
+    "reset_preferences_help": "Không xóa tài khoản, file đã nhập hoặc bản sao file gốc.",
+    "cancel": "Hủy",
+    "visual_import_help": "Chọn file ESP hoặc Chams từ ứng dụng Tệp. Mục này lưu file; chưa có bộ đọc để tự kích hoạt hiệu ứng trong game.",
+    "visual_imported": "Đã lưu file. Nhập file không tự bật ESP hoặc Chams trong game.",
+    "import_esp": "Nhập file ESP",
+    "import_chams": "Nhập file Chams",
+    "importing": "Đang nhập file…",
+    "remove_import": "Xóa file đã nhập",
+    "remove_import_help": "Chỉ xóa bản lưu trong bigvip, không thay đổi file game."
   },
   "en": {
     "login": "Sign in",
@@ -125,7 +159,41 @@
     "enter_key": "Enter key",
     "invalid_key": "Incorrect key.",
     "key_login": "Verify key",
-    "key_accepted": "Key accepted. Continue with account sign-in above."
+    "key_accepted": "Opening lobby…",
+    "key_mode": "Key mode • no server required",
+    "display_mode": "Display mode",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "text_size": "Text size",
+    "large": "Large",
+    "extra_large": "Extra large",
+    "high_contrast": "High-contrast borders",
+    "interaction": "Buttons and interaction",
+    "large_buttons": "Larger buttons",
+    "haptics": "Haptic feedback",
+    "reduce_motion": "Reduce motion",
+    "show_hints": "Show import hints",
+    "show_game_id": "Show game bundle IDs",
+    "preview_button": "Preview button and haptics",
+    "files_and_patch": "Files and patches",
+    "show_file_size": "Show file sizes",
+    "confirm_patch": "Confirm before applying",
+    "app_information": "App information",
+    "version": "Version",
+    "stored_files": "Imported file storage",
+    "logs": "Logs",
+    "share_info": "Share diagnostic information",
+    "reset_preferences": "Reset interface preferences",
+    "reset_preferences_help": "Accounts, imported files and original-file backups are kept.",
+    "cancel": "Cancel",
+    "visual_import_help": "Choose an ESP or Chams file from Files. This stores the file; no decoder is included to activate in-game effects.",
+    "visual_imported": "File saved. Importing alone does not enable ESP or Chams in the game.",
+    "import_esp": "Import ESP file",
+    "import_chams": "Import Chams file",
+    "importing": "Importing file…",
+    "remove_import": "Remove imported file",
+    "remove_import_help": "Only the copy stored in bigvip is removed; game files are unchanged."
   },
   "zh": {
     "login": "登录",
@@ -188,8 +256,7 @@
     "access_key": "访问密钥",
     "enter_key": "输入密钥",
     "invalid_key": "密钥不正确。",
-    "key_login": "验证密钥",
-    "key_accepted": "密钥正确。请在上方登录账号。"
+    "key_login": "验证密钥"
   },
   "th": {
     "login": "เข้าสู่ระบบ",
@@ -252,8 +319,7 @@
     "access_key": "คีย์เข้าใช้งาน",
     "enter_key": "กรอกคีย์",
     "invalid_key": "คีย์ไม่ถูกต้อง",
-    "key_login": "ยืนยันคีย์",
-    "key_accepted": "คีย์ถูกต้อง เข้าสู่ระบบบัญชีด้านบนต่อได้"
+    "key_login": "ยืนยันคีย์"
   },
   "ja": {
     "login": "ログイン",
@@ -316,8 +382,7 @@
     "access_key": "アクセスキー",
     "enter_key": "キーを入力",
     "invalid_key": "キーが違います。",
-    "key_login": "キー認証",
-    "key_accepted": "キーを確認しました。上のアカウントでログインしてください。"
+    "key_login": "キー認証"
   },
   "ko": {
     "login": "로그인",
@@ -380,8 +445,7 @@
     "access_key": "접속 키",
     "enter_key": "키 입력",
     "invalid_key": "키가 올바르지 않습니다.",
-    "key_login": "키 확인",
-    "key_accepted": "키가 확인되었습니다. 위에서 계정으로 로그인하세요."
+    "key_login": "키 확인"
   },
   "es": {
     "login": "Iniciar sesión",
@@ -444,8 +508,7 @@
     "access_key": "Clave de acceso",
     "enter_key": "Introduce la clave",
     "invalid_key": "Clave incorrecta.",
-    "key_login": "Verificar clave",
-    "key_accepted": "Clave correcta. Continúa con el inicio de sesión arriba."
+    "key_login": "Verificar clave"
   },
   "fr": {
     "login": "Connexion",
@@ -508,8 +571,7 @@
     "access_key": "Clé d’accès",
     "enter_key": "Saisissez la clé",
     "invalid_key": "Clé incorrecte.",
-    "key_login": "Valider la clé",
-    "key_accepted": "Clé valide. Connectez-vous à votre compte ci-dessus."
+    "key_login": "Valider la clé"
   },
   "de": {
     "login": "Anmelden",
@@ -572,8 +634,7 @@
     "access_key": "Zugangsschlüssel",
     "enter_key": "Schlüssel eingeben",
     "invalid_key": "Falscher Schlüssel.",
-    "key_login": "Schlüssel prüfen",
-    "key_accepted": "Schlüssel bestätigt. Oben mit dem Konto anmelden."
+    "key_login": "Schlüssel prüfen"
   },
   "id": {
     "login": "Masuk",
@@ -636,7 +697,6 @@
     "access_key": "Kunci akses",
     "enter_key": "Masukkan kunci",
     "invalid_key": "Kunci salah.",
-    "key_login": "Verifikasi kunci",
-    "key_accepted": "Kunci benar. Lanjutkan masuk akun di atas."
+    "key_login": "Verifikasi kunci"
   }
 }

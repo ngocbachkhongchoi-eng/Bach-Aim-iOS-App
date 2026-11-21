@@ -42,7 +42,7 @@ struct ContentView: View {
                         .shadow(color: prefs.accent.opacity(0.35), radius: 18, y: 10)
                     Text(prefs.text("choose_game")).font(.caption.weight(.bold)).tracking(2)
                         .foregroundStyle(.secondary)
-                    Text(prefs.text("login_ok") + " · IP: " + auth.ip).font(.caption).foregroundStyle(.secondary)
+                    Text(auth.isLocalKeySession ? prefs.text("key_mode") : prefs.text("login_ok") + " · IP: " + auth.ip).font(.caption).foregroundStyle(.secondary)
                     ForEach(BigVipGame.games) { game in
                         NavigationLink {
                             BigVipGameView(game: game, onBrowse: { showFiles = true })
@@ -52,13 +52,14 @@ struct ContentView: View {
                                     .font(.title).frame(width: 48)
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(game.title).font(.title2.weight(.bold))
-                                    Text("Aim · ESP").font(.subheadline).opacity(0.8)
+                                    Text("Aim · ESP · Chams").font(.subheadline).opacity(0.8)
+                                    if prefs.showGameID { Text(game.id).font(.caption2.monospaced()).lineLimit(1) }
                                 }
                                 Spacer()
                                 Image(systemName: "arrow.up.right")
                             }
                             .foregroundStyle(.white).padding(24)
-                            .background(LinearGradient(colors: [prefs.accent, prefs.accent.opacity(0.45)],
+                            .background(LinearGradient(colors: [Color(red: 0.02, green: 0.12, blue: 0.23), prefs.accent.opacity(0.8)],
                                                        startPoint: .topLeading, endPoint: .bottomTrailing))
                             .clipShape(RoundedRectangle(cornerRadius: 24))
                         }.buttonStyle(.plain)
@@ -123,6 +124,7 @@ private struct BigVipGameView: View {
     let onBrowse: () -> Void
     @Environment(\.appLanguage) private var language
     @EnvironmentObject private var auth: BigVipAuth
+    @EnvironmentObject private var prefs: BigVipPreferences
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab = 0
     @State private var targetPath = ""
@@ -135,6 +137,7 @@ private struct BigVipGameView: View {
     @State private var lastAction = ""
     @State private var selectedCache: BigVipCacheFile?
     @State private var showCacheImporter = false
+    @State private var showApplyConfirmation = false
     @State private var pendingCacheSelection: Result<[URL], Error>?
 
     private var key: String { "bigvip.aimNeck." + game.id }
@@ -159,6 +162,10 @@ private struct BigVipGameView: View {
                 onSelection: { result in pendingCacheSelection = result; showCacheImporter = false },
                 onCancel: { showCacheImporter = false })
         }
+        .confirmationDialog("Áp dụng file cache?", isPresented: $showApplyConfirmation, titleVisibility: .visible) {
+            Button("Áp dụng") { authorizeAndApply() }
+            Button("Hủy", role: .cancel) {}
+        } message: { Text("Đóng game trước khi áp dụng. File gốc sẽ được lưu để khôi phục.") }
         .onAppear(perform: loadConfiguration)
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BigVipAimTargetSelected"))) { _ in loadConfiguration() }
         .onChange(of: scenePhase) { phase in if phase == .active { refreshReceipt() } }
@@ -191,13 +198,11 @@ private struct BigVipGameView: View {
             Text("File cache của bạn").font(.headline)
             if let cache = selectedCache {
                 Label(cache.filename, systemImage: "doc.fill").font(.subheadline)
-                Text(ByteCountFormatter.string(fromByteCount: Int64(cache.data.count), countStyle: .file))
-                    .font(.caption).foregroundStyle(.secondary)
+                if prefs.showFileSize { Text(ByteCountFormatter.string(fromByteCount: Int64(cache.data.count), countStyle: .file)).font(.caption).foregroundStyle(.secondary) }
             }
             Button(selectedCache == nil ? "Nhập file cache" : "Đổi file cache") { showCacheImporter = true }
-                .buttonStyle(.borderedProminent).disabled(working || receipt != nil)
-            Text("Nhận tên cache… hoặc đuôi .cache, tối đa 64 MB. Khôi phục file gốc trước khi đổi sang cache khác.")
-                .font(.caption).foregroundStyle(.secondary)
+                .buttonStyle(BigVipPrimaryButtonStyle()).disabled(working || receipt != nil)
+            if prefs.showHints { Text("Nhận tên cache… hoặc đuôi .cache, tối đa 64 MB. Khôi phục file gốc trước khi đổi sang cache khác.").font(.caption).foregroundStyle(.secondary) }
             Divider()
             Text("File cache đích").font(.headline)
             TextField("Đường dẫn trong dữ liệu game, gồm tên file", text: $targetPath, axis: .vertical)
@@ -209,7 +214,7 @@ private struct BigVipGameView: View {
                 }
             HStack {
                 Button("Lưu đường dẫn", action: saveConfiguration)
-                    .buttonStyle(.borderedProminent).disabled(working || receipt != nil)
+                    .buttonStyle(BigVipPrimaryButtonStyle()).disabled(working || receipt != nil)
                 Button("Duyệt file", action: onBrowse)
                     .buttonStyle(.bordered).disabled(working)
             }
@@ -223,16 +228,7 @@ private struct BigVipGameView: View {
     }
 
     private var espPanel: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label("ESP", systemImage: "viewfinder").font(.title2.weight(.heavy))
-                .foregroundStyle(AppTheme.accent)
-            Text("Chưa có mô-đun ESP").font(.headline)
-            Text("Bản này chưa có dữ liệu vị trí người chơi để hiển thị dây, hộp hoặc xương.")
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading).padding(22)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        BigVipVisualImportView(bundleID: game.id)
     }
 
     private func loadConfiguration() {
@@ -287,7 +283,12 @@ private struct BigVipGameView: View {
 
     private func setAimEnabled(_ enabled: Bool) {
         guard !working else { return }
+        prefs.feedback()
         if !enabled { applyAimChange(false); return }
+        if prefs.confirmApply { showApplyConfirmation = true } else { authorizeAndApply() }
+    }
+
+    private func authorizeAndApply() {
         working = true
         Task {
             do {
