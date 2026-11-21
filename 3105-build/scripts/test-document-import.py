@@ -40,4 +40,4 @@ print("PASS: bytes, Unicode name, unique copies, source lifetime, missing file, 
 with tempfile.TemporaryDirectory(prefix="bigvip-tests-") as temp:
     program = pathlib.Path(temp) / "ImportTests.swift"
     program.write_text("import Foundation\nenum ImportUnderTest {\n" + helper + "\n}\n" + test)
-    subprocess.run(["swift", str(program)], check=True)
+    subprocess.run(["swift", str(program)], check=True, timeout=180)

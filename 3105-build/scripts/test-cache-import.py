@@ -80,4 +80,4 @@ print("PASS: custom cache bytes, alternate cache, invalid inputs, .3105 schemas 
 with tempfile.TemporaryDirectory(prefix="bigvip-cache-tests-") as temp:
     p = pathlib.Path(temp) / "CacheTests.swift"
     p.write_text(models + "\n" + codec + "\n" + cache + "\n" + visual + "\n" + checks)
-    subprocess.run(["swift", str(p)], check=True)
+    subprocess.run(["swift", str(p)], check=True, timeout=180)

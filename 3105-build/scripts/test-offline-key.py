@@ -59,5 +59,5 @@ with tempfile.TemporaryDirectory(prefix="bigvip-auth-tests-") as temp:
     p = pathlib.Path(temp) / "AuthTests.swift"
     p.write_text("import Foundation\nimport Combine\n" + models + stub + auth + test)
     exe = pathlib.Path(temp) / "AuthTests"
-    subprocess.run(["swiftc", "-parse-as-library", str(p), "-o", str(exe)], check=True)
-    subprocess.run([str(exe)], check=True)
+    subprocess.run(["swiftc", "-parse-as-library", str(p), "-o", str(exe)], check=True, timeout=180)
+    subprocess.run([str(exe)], check=True, timeout=180)
